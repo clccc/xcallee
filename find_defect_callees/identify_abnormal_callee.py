@@ -26,12 +26,12 @@ class FindAbnorCallee:
             h += p[i] * math.log(p[i], 2)
         h = -h/math.log(n, 10)
         return h
+
     def get_entropy(self):
         entropy = []
         for pattern_path in self.callee_patterns:
             entropy_path = self.entropy_callee(pattern_path)
             entropy.append(entropy_path)
-
 
     def entropy_callee(self):
         entropy = []

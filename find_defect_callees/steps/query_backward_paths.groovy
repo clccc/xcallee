@@ -30,7 +30,7 @@ Object.metaClass.getBackwardPaths = { calleeid ->
             }
         }
         paths = newpaths
-        if(paths.size() > 20000){
+        if(paths.size() > 10000){
             println "error"
             return allpaths
         }

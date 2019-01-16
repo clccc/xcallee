@@ -1,9 +1,11 @@
 Object.metaClass.parseControl= { control, nextCfgId ->
     println "parseControl control = " + control
     operator = g.v(control).outE('IS_AST_PARENT').inV.operator.toList()
-    operator_code = ''
     if (operator.size() == 1)
         operator_code = operator[0]
+    else{
+        operator_code = " "
+    }
     flowlabel_code = _getFlowlabelOfCfgIds(control, nextCfgId)
     children = g.v(control).outE('IS_AST_PARENT').inV.out.transform{
         [it.code, it.type]
