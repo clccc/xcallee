@@ -25,7 +25,7 @@ class FindAbnorCallee:
         for i in range(0, len(p)):
             h += p[i] * math.log(p[i], 2)
         h = -h/math.log(n, 10)
-        return h
+        return round(h, 2)
 
     def get_entropy(self):
         entropy = []
@@ -37,46 +37,58 @@ class FindAbnorCallee:
         entropy = []
         bag_implicit = [[] for i in range(self.args_count)]
         bag_explicit = [[] for i in range(self.args_count)]
+        size_bag_implicit = []
+        size_bag_explicit = []
 
-        # create the bags of patterns
-        for pattern_callee in self.patterns:
-            callee_implicit_patterns = pattern_callee[1][0]
-            for path_implicit_pattern in callee_implicit_patterns:
+        # 1. create the bags of patterns
+        for patterns_callee in self.patterns:
+            # pattern_path
+            callee_id = patterns_callee[0]
+            for pattern_path in patterns_callee[1]:
+                if pattern_path == [[], []]:
+                    continue
+                path_implicit_patterns = pattern_path[0]
+                path_explicit_patterns = pattern_path[1]
+                # sometimes path_implicit_patterns = [], path_explicit_patterns = []
                 for i_arg in range(self.args_count):
-                    bag_implicit[i_arg].extend(path_implicit_pattern[i_arg])
-            callee_explicit_patterns = pattern_callee[1][1]
-            for path_explicit_pattern in callee_explicit_patterns:
+                    bag_implicit[i_arg].extend(path_implicit_patterns[i_arg])
                 for i_arg in range(self.args_count):
-                    bag_explicit[i_arg].extend(path_explicit_pattern[i_arg])
-        # remove blank patterns
-        bag_implicit.remove([])
-        bag_explicit.remove([])
-        # calculate the entropy of each path of the @callee_id
-        size_bag_implicit = float(len(bag_implicit))
-        size_bag_explicit = float(len(bag_explicit))
+                    bag_explicit[i_arg].extend(path_explicit_patterns[i_arg])
+        for i_arg in range(self.args_count):
+            size_bag_implicit.append(float(len(bag_implicit[i_arg])))
+            size_bag_explicit.append(float(len(bag_explicit[i_arg])))
         size_bag = size_bag_implicit + size_bag_explicit
-        for pattern_callee in self.patterns:
-            callee_id = pattern_callee[0]
-            entropy_implicit_pattern_paths = []
-            callee_implicit_patterns = pattern_callee[1][0]
-            for path_implicit_pattern in callee_implicit_patterns:
-                probability_implicit_pattern_path = []
-                for pattern in path_implicit_pattern:
-                    probability_implicit_pattern_path.append(bag_implicit.count(pattern)/size_bag_implicit)
-                entropy_implicit_pattern_paths.append(
-                    self.calculate_entropy(probability_implicit_pattern_path, size_bag_implicit))
 
-            entropy_explicit_pattern_paths = []
-            callee_explicit_patterns = pattern_callee[1][1]
-            for path_explicit_pattern in callee_explicit_patterns:
-                probability_explicit_pattern_path = []
-                for pattern in path_explicit_pattern:
-                    probability_explicit_pattern_path.append(bag_explicit.count(pattern)/size_bag_explicit)
-                entropy_explicit_pattern_paths.append(
-                    self.calculate_entropy(probability_explicit_pattern_path, size_bag_explicit))
+        # 2. calculate the entropy of each path of the @callee_id
 
-            entropy.append([callee_id, entropy_implicit_pattern_paths, entropy_explicit_pattern_paths])
-            return entropy
+        for patterns_callee in self.patterns:
+            callee_id = patterns_callee[0]
+            patterns_paths = patterns_callee[1]
+            path_counts = len(patterns_paths)
+            for index_path in range(path_counts):
+                entropy_explicit = []
+                entropy_implicit = []
+                if patterns_paths[index_path] == [[], []]:
+                    continue
+                path_implicit_patterns = patterns_paths[index_path][0]
+                path_explicit_patterns = patterns_paths[index_path][1]
+                for i_arg in range(self.args_count):
+                    implicit_patterns = path_implicit_patterns[i_arg]
+                    probability_tmp = []
+                    for pattern in implicit_patterns:
+                        probability_tmp.append(bag_implicit[i_arg].count(pattern)/size_bag_implicit[i_arg])
+                    entropy_implicit_tmp = self.calculate_entropy(probability_tmp, size_bag_implicit[i_arg])
+                    entropy_implicit.append(entropy_implicit_tmp)
+
+                    probability_tmp = []
+                    explicit_patterns = path_explicit_patterns[i_arg]
+                    for pattern in explicit_patterns:
+                        probability_tmp.append(bag_explicit[i_arg].count(pattern)/size_bag_explicit[i_arg])
+                    entropy_explicit_tmp = self.calculate_entropy(probability_tmp, size_bag_explicit[i_arg])
+                    entropy_explicit.append(entropy_explicit_tmp)
+
+                entropy.append([callee_id, entropy_implicit, entropy_explicit])
+        return entropy
 
 
 
@@ -104,7 +116,7 @@ if __name__ == '__main__':
     filename = "../Data/strcpy.data"
     patterns = ObjDataAndBinFile.binfile2objdata(filename)
     identify = FindAbnorCallee(patterns, 1.5)
-    identify.entropy_callee()
+    print identify.entropy_callee()
     endtime = datetime.datetime.now()
     print "\nEnd: %s"%endtime
     print "\nTime Used: %s"%(endtime - starttime)

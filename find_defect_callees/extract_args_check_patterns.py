@@ -15,7 +15,7 @@ class ExtractArgsCheckPatterns:
         self.db_provider = DBContentsProvider()
         self.file_io_provider = ObjDataAndBinFile()
         self.function_name = function_name
-        self.count_threads = 100
+        self.count_threads = 20
 
     def set_implicit_check_pattern(self, arg_checked, arg_by):
         # CNT is constant, OutVar is variable from outside of caller
@@ -383,40 +383,41 @@ class ExtractArgsCheckPatterns:
         callee_ids = self.query_callee_ids(self.function_name)
         # callee_ids = [6193056]
         # callee_ids = [4994242]
+        # callee_ids = [5249101]
         check_patterns = []
         for callee_id in callee_ids:
             check_patterns_callee = []
             callsite_id = self.query_callsite_id(callee_id)
             all_controls = self.query_controls(callsite_id)
             all_paths = self.query_backward_paths(callee_id)
+            paths_count = len(all_paths)
             print "len(all_paths) = %d" % len(all_paths)
 
-            if len(all_paths) == 0:
+            if paths_count == 0:
                 check_patterns_callee.append([[], []])
                 check_patterns.append([callee_id, check_patterns_callee])
                 continue
             else:
                 index_path = 0
-                while index_path < len(all_paths):
+                while index_path < paths_count:
                     threads = [[] for i in range(self.count_threads)]
                     results_thread = [[] for i in range(self.count_threads)]
+                    threads_count = 0
                     for j in range(self.count_threads):
-                        now_path = index_path + j
-                        if now_path > (len(all_paths) - 1):
-                            j = j - 1
-                            break
-                        controls_path = self.query_controls_path(all_controls, all_paths[now_path])
-                        threads[j] = Thread(target=self.query_check_patterns_path_thread,
-                                            args=(callee_id, callsite_id, all_paths[now_path],
-                                                  controls_path, results_thread, j))
-                        threads[j].start()
-
-                    print "\t now_path = %d" % now_path
-                    for t in range(j+1):
+                        if index_path < paths_count:
+                            controls_path = self.query_controls_path(all_controls, all_paths[index_path])
+                            threads[j] = Thread(target=self.query_check_patterns_path_thread,
+                                                args=(callee_id, callsite_id, all_paths[index_path],
+                                                      controls_path, results_thread, j))
+                            threads_count = threads_count + 1
+                            threads[j].start()
+                            index_path = index_path + 1
+                    for t in range(threads_count):
                         threads[t].join()
-                    for t in range(j+1):
+                    for t in range(threads_count):
                         check_patterns_callee.append(results_thread[t])
-                    index_path = now_path + 1
+                    print "\t index_path = %d" % index_path
+
 
                 # #Thinking# if some paths of the same @callee have the same check_patterns,
                 # consider some caller has too much paths, that will make bad effect on the measurement of differenct,
@@ -435,12 +436,12 @@ if __name__ == '__main__':
     start_time = datetime.datetime.now()
     print "\nBegin time: %s \n" % start_time
 
-    extract_check_patterns = ExtractArgsCheckPatterns("strcpy")
+    extract_check_patterns = ExtractArgsCheckPatterns("memset")
     filepath = '../Data/OutStatsData_D_20160712-211019.data'
     # extract_check_patterns.query_parsed_control(6638, 6651)
     patterns = extract_check_patterns.run_thread()
     # patterns = extract_check_patterns.run()
-    ObjDataAndBinFile.objdata2file(patterns, "../Data/strcpy.data")
+    ObjDataAndBinFile.objdata2file(patterns, "../Data/memset.data")
     # extract_check_patterns.run()
 
     end_time = datetime.datetime.now()
