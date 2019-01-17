@@ -211,18 +211,16 @@ class ExtractArgsCheckPatterns:
         control_symbols = self.run_gremlin_query(query)
         return control_symbols
 
-    # create list = [[],[],...]
-    def create_nums_null_list(self, num):
-        return [[] for i in range(num)]
-
-    def unique_list(self, old_list):
+    @staticmethod
+    def unique_list(old_list):
         new_list = []
         for i in old_list:
             if i not in new_list:
                 new_list.append(i)
         return new_list
 
-    def is_lists_cross(self, list1, list2):
+    @staticmethod
+    def is_lists_cross(list1, list2):
         for l in list1:
             if l in list2:
                 return True
@@ -242,7 +240,7 @@ class ExtractArgsCheckPatterns:
 
         arg_num = len(arg_ids)
         # query_implicit_check_patterns_path
-        implicit_check_patterns = self.create_nums_null_list(arg_num)
+        implicit_check_patterns = [[] for i in range(arg_num)]
 
         for i in range(0, arg_num):
             for j in range(0, arg_num):
@@ -281,8 +279,8 @@ class ExtractArgsCheckPatterns:
         # If there is a define node on one symbol of the @arg, whose location is between the control node @control
         # and the callsite, then the @control is not take an explicit check on the @arg.
         # Else if the defvar(@control) ^ defvar(@arg) != [], then @control is take an explicit check on the @arg.
-        explicit_check_patterns = self.create_nums_null_list(arg_num)
-        explicit_checkinfo_args = self.create_nums_null_list(arg_num)
+        explicit_check_patterns = [[] for i in range(arg_num)]
+        explicit_checkinfo_args = [[] for i in range(arg_num)]
         log_arg_vs_control = []
         symbols_id_of_controls, symbols_code_of_controls = self.query_symbols_by_ids(controls_path)
         define_vars_of_controls = []
@@ -344,143 +342,38 @@ class ExtractArgsCheckPatterns:
         return implicit_check_patterns, explicit_check_patterns
 
     def query_check_patterns_path_thread(self, callee_id, callsite_id, path, controls_path, result, index):
-        arg_ids = self.query_args(callee_id)
-        symbols_id_of_args, symbols_code_of_args = self.query_symbols_by_ids(arg_ids)
-        def_chain_path = self.query_define_chains(path)
-        define_vars_of_args = []
-        define_dst_of_args = []
-        for symbols_arg in symbols_id_of_args:
-            defvars_of_arg, define_dst_of_arg = \
-                self.query_define_vars_dst_on_symbols(callsite_id, symbols_arg, def_chain_path)
-            define_vars_of_args.append(defvars_of_arg)
-            define_dst_of_args.append(define_dst_of_arg)
-
-        arg_num = len(arg_ids)
-        # query_implicit_check_patterns_path
-        implicit_check_patterns = self.create_nums_null_list(arg_num)
-
-        for i in range(0, arg_num):
-            for j in range(0, arg_num):
-                if i == j:
-                    continue
-                if self.is_lists_cross(symbols_id_of_args[i], symbols_id_of_args[j]):
-                    implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, j))
-                    # implicit_check_patterns[j].append(self.set_implicit_check_pattern(j, i))
-                    continue
-                if self.is_lists_cross(define_vars_of_args[i], symbols_code_of_args[j]):
-                    implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, j))
-                    continue
-                if self.is_lists_cross(define_vars_of_args[i], define_vars_of_args[j]):
-                    implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, j))
-                    # implicit_check_patterns[j].append(self.set_implicit_check_pattern(j, i))
-                    continue
-                if not symbols_id_of_args[i]:
-                    implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, "CNT"))
-                    continue
-                # When Joern can not identify the Global variable/const,
-                # the arg may have symbol but its define_vars_of_args is NULL.
-                # Because the global variable is not recommend, used rareallsite_idly,
-                # so we set its check pattern as defined by const  "CNT"
-                # const: type 'PrimaryExpression'
-                if symbols_id_of_args[i] and (not define_vars_of_args[i]):
-                    implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, "CNT"))
-                    continue
-                # If the right values of all the define nodes of the define chains' tails are constants,
-                # the arg is defined by constant
-                # Todo:
-
-                # the default define patten is defined by "OutVar"
-                implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, "OutVar"))
-
-        # query_explicit_check_patterns_path:
-        # If there is a define node on one symbol of the @arg, whose location is between the control node @control
-        # and the callsite, then the @control is not take an explicit check on the @arg.
-        # Else if the defvar(@control) ^ defvar(@arg) != [], then @control is take an explicit check on the @arg.
-        explicit_check_patterns = self.create_nums_null_list(arg_num)
-        explicit_checkinfo_args = self.create_nums_null_list(arg_num)
-        log_arg_vs_control = []
-        symbols_id_of_controls, symbols_code_of_controls = self.query_symbols_by_ids(controls_path)
-        define_vars_of_controls = []
-        define_dst_of_controls = []
-        for symbols_control in symbols_id_of_controls:
-            defvars_of_control, define_dst_of_control = \
-                self.query_define_vars_dst_on_symbols(callsite_id, symbols_control, def_chain_path)
-            define_vars_of_controls.append(defvars_of_control)
-            define_dst_of_controls.append(define_dst_of_control)
-
-        for index_arg in range(0, arg_num):
-            for index_control in range(0, len(controls_path)):
-                location_control = path.index(controls_path[index_control])
-                flag_valid_control = True
-                for dst_node in define_dst_of_args[index_arg]:
-                    location_dst_node = path.index(dst_node)
-                    # there is a definition  appeared after control condition in @path,
-                    # so the explict check of @control is failed
-                    if location_control > location_dst_node:
-                        flag_valid_control = False
-                        break
-                if flag_valid_control:
-                    # log the relation between arg and valid controls
-                    if self.is_lists_cross(define_vars_of_args[index_arg], define_vars_of_controls[index_control]):
-                        log_arg_vs_control.append([index_arg, index_control])
-                    # single arg checked by in condition control
-
-        # collect check info from @log_arg_vs_control into each arg
-        for index_arg in range(0, arg_num):
-            for log_check in log_arg_vs_control:
-                if log_check[0] == index_arg:
-                    index_control = log_check[1]
-                    # get some useful control information
-                    # self.query_parsed_control(controls_path[index_control],
-                    #                           controls_path[index_control - 1])  is wrong
-                    index_next_node = path.index(controls_path[index_control]) - 1
-                    flowlabel_code, operate_code, children = \
-                        self.query_parsed_control(controls_path[index_control], path[index_next_node])
-
-                    args_by_control = []
-                    for log_check_2 in log_arg_vs_control:
-                        if log_check_2[1] == index_control:
-                            if log_check_2[0] != index_arg:
-                                args_by_control.append(log_check_2[0])
-                    args_by_control = self.unique_list(args_by_control)
-                    args_by_control.sort()
-                    explicit_checkinfo_args[index_arg].append([flowlabel_code, operate_code, args_by_control])
-
-        for index_arg in range(0, arg_num):
-            for checkinfo in explicit_checkinfo_args[index_arg]:
-                explicit_check_patterns[index_arg].append(
-                    self.set_explicit_check_pattern(arg_checked=index_arg, checkinfo=checkinfo))
-
-        for i in range(0, len(implicit_check_patterns)):
-            implicit_check_patterns[i] = self.unique_list(implicit_check_patterns[i])
-        for i in range(0, len(explicit_check_patterns)):
-            explicit_check_patterns[i] = self.unique_list(explicit_check_patterns[i])
+        implicit_check_patterns, explicit_check_patterns = \
+            self.query_check_patterns_path(callee_id, callsite_id, path, controls_path)
 
         result[index] = [implicit_check_patterns, explicit_check_patterns]
         return result
 
     def run(self):
-        # callee_ids = self.query_callee_ids(self.function_name)
-        callee_ids = [6193056]
+        callee_ids = self.query_callee_ids(self.function_name)
+        # callee_ids = [6193056]
+        # callee_ids = [4994242]
         check_patterns = []
         check_patterns_callee = []
         for callee_id in callee_ids:
             callsite_id = self.query_callsite_id(callee_id)
             all_controls = self.query_controls(callsite_id)
             all_paths = self.query_backward_paths(callee_id)
-            for i in range(0, len(all_paths)):
-                controls_path = self.query_controls_path(all_controls, all_paths[i])
-                implicit_check_patterns, explicit_check_patterns = \
-                    self.query_check_patterns_path(callee_id, callsite_id, all_paths[i], controls_path)
-                check_patterns_callee.append([implicit_check_patterns, explicit_check_patterns])
+            if len(all_paths) == 0:
+                check_patterns_callee.append([[], []])
+                check_patterns.append([callee_id, check_patterns_callee])
+                continue
+            else:
+                for i in range(0, len(all_paths)):
+                    controls_path = self.query_controls_path(all_controls, all_paths[i])
+                    implicit_check_patterns, explicit_check_patterns = \
+                        self.query_check_patterns_path(callee_id, callsite_id, all_paths[i], controls_path)
+                    check_patterns_callee.append([implicit_check_patterns, explicit_check_patterns])
 
-            # #Thinking# if some paths of the same @callee have the same check_patterns,
-            # consider some caller has too much paths, that will make bad effect on the measurement of differenct,
-            # so we union the same check_patterns
-
-            check_patterns_callee = self.unique_list(check_patterns_callee)
-
-            check_patterns.append([callee_id, check_patterns_callee])
+                # #Thinking# if some paths of the same @callee have the same check_patterns,
+                # consider some caller has too much paths, that will make bad effect on the measurement of differenct,
+                # so we union the same check_patterns
+                check_patterns_callee = self.unique_list(check_patterns_callee)
+                check_patterns.append([callee_id, check_patterns_callee])
 
         print check_patterns
         return check_patterns
@@ -489,39 +382,47 @@ class ExtractArgsCheckPatterns:
     def run_thread(self):
         callee_ids = self.query_callee_ids(self.function_name)
         # callee_ids = [6193056]
-        # callee_ids = [4994206]
+        # callee_ids = [4994242]
         check_patterns = []
-        check_patterns_callee = []
         for callee_id in callee_ids:
+            check_patterns_callee = []
             callsite_id = self.query_callsite_id(callee_id)
             all_controls = self.query_controls(callsite_id)
             all_paths = self.query_backward_paths(callee_id)
-            index_path = 0
             print "len(all_paths) = %d" % len(all_paths)
-            while index_path < len(all_paths):
-                threads = [[] for i in range(self.count_threads)]
-                results_thread = [[] for i in range(self.count_threads)]
-                for j in range(self.count_threads):
-                    now_path = index_path + j
-                    if now_path > (len(all_paths) - 1):
-                        j = j - 1
-                        break
-                    controls_path = self.query_controls_path(all_controls, all_paths[now_path])
-                    threads[j] = Thread(target=self.query_check_patterns_path_thread, args=(callee_id, callsite_id, all_paths[now_path], controls_path, results_thread, j))
-                    threads[j].start()
-                print "\tnow_path = %d" % now_path
-                for t in range(j+1):
-                    threads[t].join()
-                check_patterns_callee.extend(results_thread)
-                index_path = now_path + 1
 
-            # #Thinking# if some paths of the same @callee have the same check_patterns,
-            # consider some caller has too much paths, that will make bad effect on the measurement of differenct,
-            # so we union the same check_patterns
+            if len(all_paths) == 0:
+                check_patterns_callee.append([[], []])
+                check_patterns.append([callee_id, check_patterns_callee])
+                continue
+            else:
+                index_path = 0
+                while index_path < len(all_paths):
+                    threads = [[] for i in range(self.count_threads)]
+                    results_thread = [[] for i in range(self.count_threads)]
+                    for j in range(self.count_threads):
+                        now_path = index_path + j
+                        if now_path > (len(all_paths) - 1):
+                            j = j - 1
+                            break
+                        controls_path = self.query_controls_path(all_controls, all_paths[now_path])
+                        threads[j] = Thread(target=self.query_check_patterns_path_thread,
+                                            args=(callee_id, callsite_id, all_paths[now_path],
+                                                  controls_path, results_thread, j))
+                        threads[j].start()
 
-            check_patterns_callee = self.unique_list(check_patterns_callee)
+                    print "\t now_path = %d" % now_path
+                    for t in range(j+1):
+                        threads[t].join()
+                    for t in range(j+1):
+                        check_patterns_callee.append(results_thread[t])
+                    index_path = now_path + 1
 
-            check_patterns.append([callee_id, check_patterns_callee])
+                # #Thinking# if some paths of the same @callee have the same check_patterns,
+                # consider some caller has too much paths, that will make bad effect on the measurement of differenct,
+                # so we union the same check_patterns
+                check_patterns_callee = self.unique_list(check_patterns_callee)
+                check_patterns.append([callee_id, check_patterns_callee])
 
         print "check_patterns =： "
         print check_patterns
@@ -534,10 +435,12 @@ if __name__ == '__main__':
     start_time = datetime.datetime.now()
     print "\nBegin time: %s \n" % start_time
 
-    extract_check_patterns = ExtractArgsCheckPatterns("memset")
+    extract_check_patterns = ExtractArgsCheckPatterns("strcpy")
     filepath = '../Data/OutStatsData_D_20160712-211019.data'
     # extract_check_patterns.query_parsed_control(6638, 6651)
-    extract_check_patterns.run_thread()
+    patterns = extract_check_patterns.run_thread()
+    # patterns = extract_check_patterns.run()
+    ObjDataAndBinFile.objdata2file(patterns, "../Data/strcpy.data")
     # extract_check_patterns.run()
 
     end_time = datetime.datetime.now()

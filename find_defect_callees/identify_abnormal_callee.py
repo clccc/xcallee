@@ -7,14 +7,14 @@
 # entropy. the argument' entropy is the average entropy of each pairs of the target callee with other callees.
 # -----------------------------
 
-import sys
 import math
-sys.path.append("..")
+from commonFile.ObjDataAndBinFile import ObjDataAndBinFile
 
 class FindAbnorCallee:
 
     def __init__(self, callee_patterns, threshold):
-        self.callee_patterns = callee_patterns
+        self.patterns = callee_patterns
+        self.args_count = len(callee_patterns[0][1][0])
         self.threshold = threshold
 
     @staticmethod
@@ -29,22 +29,25 @@ class FindAbnorCallee:
 
     def get_entropy(self):
         entropy = []
-        for pattern_path in self.callee_patterns:
+        for pattern_path in self.patterns:
             entropy_path = self.entropy_callee(pattern_path)
             entropy.append(entropy_path)
 
     def entropy_callee(self):
         entropy = []
-        bag_implicit = []
-        bag_explicit = []
+        bag_implicit = [[] for i in range(self.args_count)]
+        bag_explicit = [[] for i in range(self.args_count)]
+
         # create the bags of patterns
-        for pattern_callee in self.callee_patterns:
+        for pattern_callee in self.patterns:
             callee_implicit_patterns = pattern_callee[1][0]
             for path_implicit_pattern in callee_implicit_patterns:
-                bag_implicit.extend(path_implicit_pattern)
+                for i_arg in range(self.args_count):
+                    bag_implicit[i_arg].extend(path_implicit_pattern[i_arg])
             callee_explicit_patterns = pattern_callee[1][1]
             for path_explicit_pattern in callee_explicit_patterns:
-                bag_explicit.extend(path_explicit_pattern)
+                for i_arg in range(self.args_count):
+                    bag_explicit[i_arg].extend(path_explicit_pattern[i_arg])
         # remove blank patterns
         bag_implicit.remove([])
         bag_explicit.remove([])
@@ -52,7 +55,7 @@ class FindAbnorCallee:
         size_bag_implicit = float(len(bag_implicit))
         size_bag_explicit = float(len(bag_explicit))
         size_bag = size_bag_implicit + size_bag_explicit
-        for pattern_callee in self.callee_patterns:
+        for pattern_callee in self.patterns:
             callee_id = pattern_callee[0]
             entropy_implicit_pattern_paths = []
             callee_implicit_patterns = pattern_callee[1][0]
@@ -90,14 +93,18 @@ if __name__ == '__main__':
     import datetime
     starttime = datetime.datetime.now()
     print "\nBegin time: %s"%starttime
-
+    """
     print FindAbnorCallee.calculate_entropy([0.6, 0.4], 4)
     print FindAbnorCallee.calculate_entropy([0.6], 4)
     print FindAbnorCallee.calculate_entropy([0.4], 4)
 
     print FindAbnorCallee.calculate_entropy([1], 2)
-    #
+    """
 
+    filename = "../Data/strcpy.data"
+    patterns = ObjDataAndBinFile.binfile2objdata(filename)
+    identify = FindAbnorCallee(patterns, 1.5)
+    identify.entropy_callee()
     endtime = datetime.datetime.now()
     print "\nEnd: %s"%endtime
     print "\nTime Used: %s"%(endtime - starttime)

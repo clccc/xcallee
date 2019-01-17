@@ -10,7 +10,8 @@ import pickle
 
 class ObjDataAndBinFile:
 
-    def objdata2file(self, data, filename):
+    @staticmethod
+    def objdata2file(data, filename):
         output = open(filename, 'wb')
         # Pickle dictionary using protocol 0.
         # pickle.dump(objData, output)
@@ -20,7 +21,8 @@ class ObjDataAndBinFile:
         output.close()
 
         # 使用pickle模块从文件中重构python对象
-    def binfile2objdata(self, filename):
+    @staticmethod
+    def binfile2objdata(filename):
         pkl_file = open(filename, 'rb')
         data = pickle.load(pkl_file)
         pkl_file.close()
