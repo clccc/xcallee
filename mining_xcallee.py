@@ -6,8 +6,10 @@
 
 # import sys
 import argparse
-from find_defect_callees.identify_abnormal_callee import FindAbnorCallee
+from find_defect_callees.calculate_pattern_entropy import CalculateEntropy
 from find_defect_callees.extract_args_check_patterns import ExtractArgsCheckPatterns
+from commonFile.ObjDataAndBinFile import ObjDataAndBinFile
+from find_defect_callees.display_data import DisplayEntropyInfo
 
 # sys.path.append("..")
 
@@ -16,24 +18,25 @@ class MiningAbnormalCallee:
 
     def __init__(self):
         parser = argparse.ArgumentParser(description='Find defect callees.')
-        parser.add_argument('function', help='the target argument-sensitive function name')
-        parser.add_argument('threshold', type=int, help=' the threshold of the entropy')
+        parser.add_argument('--function', '-func',
+                            help='the target argument-sensitive function name')
+        parser.add_argument("-f", "--filepath",
+                            help=' file of check information saved')
+        parser.add_argument("-t", "--threshold", required=False, type=int, default=0.5,
+                            help="the threshold of the entropy")
         self.args_ = parser.parse_args()
-        print self.args_
-        self.run(self.args_.function, self.args_.threshold)
 
-    def run(self, function_name, threshold):
-        get_rawinfo = ExtractArgsCheckPatterns(function_name)
-
-        checkinfo = get_rawinfo.get_checkdata()
-
-        cnv_cstrlib = CnvCstrLib(checkinfo)
-        cstrlib = cnv_cstrlib.cnv_checkdata()
-
-        find_abnorcallees = FindAbnorCallee(cstrlib, self.args_.t)
-        abnor_callees = find_abnorcallees()
-
-        return abnor_callees
+    def run(self):
+        if self.args_.function:
+            extract_provider = ExtractArgsCheckPatterns(self.args_.function)
+            patterns = extract_provider.run_thread()
+        if self.args_.filepath:
+            patterns = ObjDataAndBinFile.binfile2objdata(self.args_.filepath)
+        calculate_provider = CalculateEntropy(patterns, self.args_.threshold)
+        entropy = calculate_provider.get_entropy()
+        display_provider = DisplayEntropyInfo(entropy)
+        display_provider.display_entropy()
+        return
 
 
 if __name__ == '__main__':
@@ -41,6 +44,7 @@ if __name__ == '__main__':
     import datetime
     start_time = datetime.datetime.now()
     mining_abnormal_call = MiningAbnormalCallee()
+    mining_abnormal_call.run()
     end_time = datetime.datetime.now()
     print "\nTime Used: %s" % (end_time - start_time)
 

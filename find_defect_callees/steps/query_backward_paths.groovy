@@ -2,7 +2,6 @@
 follow the @path,add new id into the path, gen @newpaths
 */
 Object.metaClass.getBackwardPaths = { calleeid ->
-    println calleeid
     cfgid = g.v(calleeid)._().statements().id.toList().toList()[0]
     if(g.v(cfgid).isCFGNode != "True")
     {
@@ -14,8 +13,8 @@ Object.metaClass.getBackwardPaths = { calleeid ->
     allpaths = []
     while (paths.size() != 0)
     {
-        println "paths.size() = " + paths.size()
-        println "allpaths.size() = " + allpaths.size()
+        // println "paths.size() = " + paths.size()
+        // println "allpaths.size() = " + allpaths.size()
 
         newpaths = genNewPaths(paths)
         // if it can not gen new path, have to break loop
@@ -35,7 +34,6 @@ Object.metaClass.getBackwardPaths = { calleeid ->
             return allpaths
         }
     }
-    println "end"
     return allpaths
 }
 

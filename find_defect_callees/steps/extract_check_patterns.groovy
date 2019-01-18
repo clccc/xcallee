@@ -20,7 +20,7 @@ Object.metaClass.getArgs= { calleeid ->
     //defIDS = g.v(callsiteId).inE('type','REACHES').outV.filter{xpath.toString().contains(it.id.toString())}.transform{[it.id, callsiteid]}
 //}
 
-def controls = []
+def controls_loop = []
 //Todo: is this right?
 Object.metaClass.getControlsFromCfgId = { cfg_id ->
     /**多个直接控制条件语句
@@ -39,11 +39,11 @@ Object.metaClass.getControlsFromCfgId = { cfg_id ->
     def control_ids = g.v(cfg_id).inE.has('label','CONTROLS').outV.id.toList()
     for(c in control_ids){
         if(g.v(c).code != "ENTRY"){
-            if(controls.contains(c))
+            if(controls_loop.contains(c))
                 continue
-            controls.add(c)
+            controls_loop.add(c)
             getControlsFromCfgId(c)
         }
     }
-    return controls
+    return controls_loop
 }
