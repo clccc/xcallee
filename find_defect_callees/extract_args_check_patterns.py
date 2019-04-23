@@ -349,17 +349,16 @@ class ExtractArgsCheckPatterns:
         result[index] = [implicit_check_patterns, explicit_check_patterns]
         return result
 
-    def run(self):
-        callee_ids = self.query_callee_ids(self.function_name)
-        # callee_ids = [6176100]
-        # callee_ids = [4994242]
+    def run_no_thread(self, callee_ids):
         check_patterns = []
         check_patterns_callee = []
         for callee_id in callee_ids:
             callsite_id = self.query_callsite_id(callee_id)
             all_controls = self.query_controls(callsite_id)
             all_paths = self.query_backward_paths(callee_id)
-            if len(all_paths) == 0:
+            paths_count = len(all_paths)
+            # print "len(all_paths) = %d" % len(all_paths)
+            if paths_count == 0:
                 check_patterns_callee.append([[], []])
                 check_patterns.append([callee_id, check_patterns_callee])
                 continue
@@ -374,17 +373,11 @@ class ExtractArgsCheckPatterns:
                 # consider some caller has too much paths, that will make bad effect on the measurement of differenct,
                 # so we union the same check_patterns
                 check_patterns_callee = self.unique_list(check_patterns_callee)
-                check_patterns.append([callsite_id, check_patterns_callee])
-
-        print check_patterns
+                check_patterns.append([callee_id, check_patterns_callee])
         return check_patterns
 
     # Todo
-    def run_thread(self):
-        callee_ids = self.query_callee_ids(self.function_name)
-        # callee_ids = [6193056]
-        # callee_ids = [4994242]
-        # callee_ids = [5249101]
+    def run_thread(self, callee_ids):
         check_patterns = []
         for callee_id in callee_ids:
             check_patterns_callee = []
@@ -393,7 +386,6 @@ class ExtractArgsCheckPatterns:
             all_paths = self.query_backward_paths(callee_id)
             paths_count = len(all_paths)
             # print "len(all_paths) = %d" % len(all_paths)
-
             if paths_count == 0:
                 check_patterns_callee.append([[], []])
                 check_patterns.append([callee_id, check_patterns_callee])
@@ -419,15 +411,28 @@ class ExtractArgsCheckPatterns:
                         check_patterns_callee.append(results_thread[t])
                     # print "\t index_path = %d" % index_path
 
-
                 # #Thinking# if some paths of the same @callee have the same check_patterns,
                 # consider some caller has too much paths, that will make bad effect on the measurement of differenct,
                 # so we union the same check_patterns
                 check_patterns_callee = self.unique_list(check_patterns_callee)
-                check_patterns.append([callsite_id, check_patterns_callee])
+                check_patterns.append([callee_id, check_patterns_callee])
+        return check_patterns
 
+    def run(self, flag_thread=True, *callee_from):
+        if isinstance(callee_from[0], list):
+            callee_ids = callee_from[0]
+            filepath = "../Data/%s.data" % callee_ids[0]
+        else:
+            callee_ids = self.query_callee_ids(self.function_name)
+            filepath = "../Data/%s.data" % self.function_name
+
+        if flag_thread:
+            check_patterns = self.run_thread(callee_ids)
+        else:
+            check_patterns = self.run_no_thread(callee_ids)
         print "check_patterns =： "
         print check_patterns
+        ObjDataAndBinFile.objdata2file(check_patterns, filepath)
         return check_patterns
 
 
@@ -436,15 +441,15 @@ if __name__ == '__main__':
 
     start_time = datetime.datetime.now()
     print "\nBegin time: %s \n" % start_time
+    # callee_ids = [6193056]
+    # callee_ids = [4994242]
+    callee_ids = [4849840]
+    function_name = "av_stristr"
 
-    extract_check_patterns = ExtractArgsCheckPatterns("av_stristr")
-    filepath = '../Data/OutStatsData_D_20160712-211019.data'
+    extract_check_patterns = ExtractArgsCheckPatterns(function_name)
+    patterns = extract_check_patterns.run(False, callee_ids)
+    # patterns = extract_check_patterns.run(flag_thread=True)
 
-    # extract_check_patterns.query_parsed_control(6638, 6651)
-    patterns = extract_check_patterns.run_thread()
-    # patterns = extract_check_patterns.run()
-    ObjDataAndBinFile.objdata2file(patterns, "../Data/av_stristr.data")
-    # extract_check_patterns.run()
     """
     flowlabel_code, operate_code, children = \
         extract_check_patterns.query_parsed_control(6638, 6651)

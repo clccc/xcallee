@@ -29,7 +29,7 @@ class MiningAbnormalCallee:
     def run(self):
         if self.args_.function:
             extract_provider = ExtractArgsCheckPatterns(self.args_.function)
-            patterns = extract_provider.run_thread()
+            patterns = extract_provider.run(flag_thread=True)
         if self.args_.filepath:
             patterns = ObjDataAndBinFile.binfile2objdata(self.args_.filepath)
         calculate_provider = CalculateEntropy(patterns, self.args_.threshold)
