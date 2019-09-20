@@ -270,9 +270,23 @@ class ExtractArgsCheckPatterns:
                 if symbols_id_of_args[i] and (not define_vars_of_args[i]):
                     implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, "CNT"))
                     continue
-                # If the right values of all the define nodes of the define chains' tails are constants,
+                # If the right values of all the define nodes of the define chains' tails (define_dst_of_args[i]) are constants,
                 # the arg is defined by constant
                 # Todo:
+                flag_value = True
+                if define_dst_of_args[i]:
+                    for nodeid in define_dst_of_args[i]:
+                        nodecode = self.run_gremlin_query("g.v(%s).code" % nodeid)
+                        value = nodecode.split("=",1)
+                        if len(value) != 2:
+                            flag_value = False
+                            break
+                        rightvalue = value[1]
+                        if rightvalue.isdigit()!= True:
+                            flag_value = False
+                            break
+                    if flag_value:
+                        implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, "CNT"))
 
                 # the default define patten is defined by "OutVar"
                 implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, "OutVar"))
