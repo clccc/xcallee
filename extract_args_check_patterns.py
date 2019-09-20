@@ -86,7 +86,7 @@ class ExtractArgsCheckPatterns:
             for j in range(0, len(def_chain)):
                 if i == j:
                     continue
-                # the last definition on the same node with the same variable is the valid one
+                # the nearest definition on the same node with the same variable is the valid one
                 if def_chain[i][0] == def_chain[j][0] and def_chain[i][1] == def_chain[j][1]:
                     if path.index(def_chain[i][2]) > path.index(def_chain[j][2]):
                         invalid_chains.append(i)
@@ -198,6 +198,7 @@ class ExtractArgsCheckPatterns:
         controls = self.run_gremlin_query(query)
         return controls
 
+    # get controls of the path
     def query_controls_path(self, controls, path):
         controls_path = []
         for c in controls:
@@ -353,7 +354,9 @@ class ExtractArgsCheckPatterns:
         check_patterns = []
         check_patterns_callee = []
         for callee_id in callee_ids:
+            # get callsite_id = cfgnodid of callee_id
             callsite_id = self.query_callsite_id(callee_id)
+            # get controls control the callsite_id
             all_controls = self.query_controls(callsite_id)
             all_paths = self.query_backward_paths(callee_id)
             paths_count = len(all_paths)
@@ -364,6 +367,7 @@ class ExtractArgsCheckPatterns:
                 continue
             else:
                 for i in range(0, len(all_paths)):
+                    # select control_ids in the path
                     controls_path = self.query_controls_path(all_controls, all_paths[i])
                     implicit_check_patterns, explicit_check_patterns = \
                         self.query_check_patterns_path(callee_id, callsite_id, all_paths[i], controls_path)
@@ -372,6 +376,7 @@ class ExtractArgsCheckPatterns:
                 # #Thinking# if some paths of the same @callee have the same check_patterns,
                 # consider some caller has too much paths, that will make bad effect on the measurement of differenct,
                 # so we union the same check_patterns
+                # 路径约束聚合
                 check_patterns_callee = self.unique_list(check_patterns_callee)
                 check_patterns.append([callee_id, check_patterns_callee])
         return check_patterns
@@ -419,9 +424,10 @@ class ExtractArgsCheckPatterns:
         return check_patterns
 
     def run(self, flag_thread=True, *callee_from):
-        if isinstance(callee_from[0], list):
-            callee_ids = callee_from[0]
-            filepath = "../Data/%s.data" % callee_ids[0]
+        if len(callee_from):
+            if isinstance(callee_from[0], list):
+                callee_ids = callee_from[0]
+                filepath = "../Data/%s.data" % callee_ids[0]
         else:
             callee_ids = self.query_callee_ids(self.function_name)
             filepath = "../Data/%s.data" % self.function_name
@@ -444,7 +450,7 @@ if __name__ == '__main__':
     # callee_ids = [6193056]
     # callee_ids = [4994242]
     # callee_ids = [4849840]
-    function_name = "av_stristr"
+    function_name = "_TIFFmemset"
 
     extract_check_patterns = ExtractArgsCheckPatterns(function_name)
     #patterns = extract_check_patterns.run(False, callee_ids)

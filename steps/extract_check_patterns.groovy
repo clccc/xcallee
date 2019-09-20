@@ -22,16 +22,16 @@ Object.metaClass.getArgs= { calleeid ->
 
 def controls_loop = []
 //Todo: is this right?
-Object.metaClass.getControlsFromCfgId = { cfg_id ->
+Object.metaClass.getControlsFromCfgId_body = { cfg_id ->
     /**多个直接控制条件语句
-     def controlslist = g.v(cfgnodeid).inE.has('label','CONTROLS').outV.id.toList()
-     for(controlid in controlslist){
+     def control_ids = g.v(cfg_id).inE.has('label','CONTROLS').outV.id.toList()
+     for(controlid in control_ids){
      if(controlid.code == "ENTRY"){
      break;
      }
      else {
      CallsiteInfo.conditionslist.add(controlid)
-     controlslist.add(g.v(controlid).inE.has('label','CONTROLS').outV.id.toList())
+     control_ids.add(g.v(controlid).inE.has('label','CONTROLS').outV.id.toList())
      }
      }
      **/
@@ -42,8 +42,15 @@ Object.metaClass.getControlsFromCfgId = { cfg_id ->
             if(controls_loop.contains(c))
                 continue
             controls_loop.add(c)
-            getControlsFromCfgId(c)
+            getControlsFromCfgId_body(c)
         }
     }
     return controls_loop
+
+}
+
+Object.metaClass.getControlsFromCfgId = { cfg_id ->
+    controls = getControlsFromCfgId_body(cfg_id)
+    controls_loop = []
+    return controls
 }
