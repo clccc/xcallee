@@ -6,7 +6,7 @@
 # -----------------------------
 
 from database_provider import DBContentsProvider
-from commonFile.ObjDataAndBinFile import ObjDataAndBinFile
+from ObjDataAndBinFile import ObjDataAndBinFile
 
 
 class DisplayEntropyInfo:

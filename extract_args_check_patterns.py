@@ -7,7 +7,7 @@
 
 from threading import Thread
 from database_provider import DBContentsProvider
-from commonFile.ObjDataAndBinFile import ObjDataAndBinFile
+from ObjDataAndBinFile import ObjDataAndBinFile
 
 
 class ExtractArgsCheckPatterns:
@@ -443,12 +443,12 @@ if __name__ == '__main__':
     print "\nBegin time: %s \n" % start_time
     # callee_ids = [6193056]
     # callee_ids = [4994242]
-    callee_ids = [4849840]
+    # callee_ids = [4849840]
     function_name = "av_stristr"
 
     extract_check_patterns = ExtractArgsCheckPatterns(function_name)
-    patterns = extract_check_patterns.run(False, callee_ids)
-    # patterns = extract_check_patterns.run(flag_thread=True)
+    #patterns = extract_check_patterns.run(False, callee_ids)
+    patterns = extract_check_patterns.run(flag_thread=True)
 
     """
     flowlabel_code, operate_code, children = \

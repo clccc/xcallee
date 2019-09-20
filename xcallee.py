@@ -6,10 +6,10 @@
 
 # import sys
 import argparse
-from find_defect_callees.calculate_pattern_entropy import CalculateEntropy
-from find_defect_callees.extract_args_check_patterns import ExtractArgsCheckPatterns
-from commonFile.ObjDataAndBinFile import ObjDataAndBinFile
-from find_defect_callees.display_data import DisplayEntropyInfo
+from calculate_pattern_entropy import CalculateEntropy
+from extract_args_check_patterns import ExtractArgsCheckPatterns
+from ObjDataAndBinFile import ObjDataAndBinFile
+from display_data import DisplayEntropyInfo
 
 # sys.path.append("..")
 

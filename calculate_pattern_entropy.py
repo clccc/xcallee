@@ -8,7 +8,7 @@
 # -----------------------------
 
 import math
-from commonFile.ObjDataAndBinFile import ObjDataAndBinFile
+from ObjDataAndBinFile import ObjDataAndBinFile
 
 
 class CalculateEntropy:
