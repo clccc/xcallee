@@ -117,7 +117,7 @@ if __name__ == '__main__':
     print CalculateEntropy.calculate_entropy([1], 2)
     """
 
-    filename = "../Data/av_stristr.data"
+    filename = "Data/av_stristr.data"
     patterns = ObjDataAndBinFile.binfile2objdata(filename)
     identify = CalculateEntropy(patterns, 1.5)
     print identify.entropy_callee()
