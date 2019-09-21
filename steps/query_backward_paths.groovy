@@ -2,24 +2,27 @@
 follow the @path,add new id into the path, gen @newpaths
 */
 Object.metaClass.getBackwardPaths = { calleeid ->
+    MAX_PATHS = 100  // the max number of paths allowed to search
     cfgid = g.v(calleeid)._().statements().id.toList().toList()[0]
     if(g.v(cfgid).isCFGNode != "True")
     {
-        println "error"
+        println "error: g.v("+ cfgid + ").isCFGNode != True)"
         return []
     }
-    paths = [[cfgid]]
-    newpaths = []
-    allpaths = []
+    paths = [[cfgid]] // currenttly not complete paths
+    newpaths = []     // generate follow @paths
+    allpaths = []     // all complete paths have been searched
     while (paths.size() != 0)
     {
         // println "paths.size() = " + paths.size()
         // println "allpaths.size() = " + allpaths.size()
 
-        newpaths = genNewPaths(paths)
-        // if it can not gen new path, have to break loop
+        newpaths = genNewPaths(paths, MAX_PATHS)
+        // if it can not gen new path any more, it is time to break loop
         if (newpaths.size ==0)
             break
+        // save the complete path to @allpaths, and it not need to search follow the path,
+        // so removed it from @newpaths
         i = newpaths.size()-1
         for(;i>=0;i--)
         {
@@ -29,15 +32,16 @@ Object.metaClass.getBackwardPaths = { calleeid ->
             }
         }
         paths = newpaths
-        if(paths.size() > 10000){
-            println "error"
+        if(allpaths.size() > 100){
+            println "error: " + cfgid + " allpaths.size() " + allpaths.size() + " > 100 . The search process was cut off！ "
             return allpaths
         }
     }
     return allpaths
 }
 
-Object.metaClass.genNewPaths = { paths ->
+//沿着当前位置向后搜索新的节点，属于广度优先遍历
+Object.metaClass.genNewPaths = { paths, MAX_PATHS ->
     def newpaths = []
     for(xpath in paths){
         lastid = xpath[xpath.size()-1]
@@ -48,6 +52,9 @@ Object.metaClass.genNewPaths = { paths ->
             if (counts >=2){
                 flag_invalid = true
                 continue
+            }
+            if (newpaths.size() >= MAX_PATHS){
+                break;
             }
             new_path = xpath.plus(xid)
             newpaths.add(new_path)
