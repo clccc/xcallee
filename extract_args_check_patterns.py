@@ -65,7 +65,7 @@ class ExtractArgsCheckPatterns:
         all_paths = self.run_gremlin_query(query)
         return all_paths
 
-    # def_chain = src <--var-- dst
+    # def_chain = src.id <--var_str-- dst.id
     def query_define_chains(self, path):
         def_chain = []
         for node_id in path:
@@ -114,11 +114,13 @@ class ExtractArgsCheckPatterns:
             """ % arg
             s_ids = self.run_gremlin_query(query)
             symbols_id.append(s_ids)
+            s_codes = []
             if s_ids:
                 for vid in s_ids:
-                    symbols_code.append(self.query_code_by_id(vid))
+                    s_codes.append(self.query_code_by_id(vid))
             else:
-                symbols_code.append(u'')
+                s_codes.append(u'')
+            symbols_code.append(s_codes)
         return symbols_id, symbols_code
 
     def query_define_vars_dst_on_symbols(self, src_id, symbols, def_chain):
@@ -140,13 +142,14 @@ class ExtractArgsCheckPatterns:
                     if middle_define_vars:
                         for dst in dst_nodes:
                             if dst not in define_dst_node:
-                                define_dst_node.extend(dst_nodes)
                                 src_new.extend(dst_nodes)
+
                             define_vars.extend(middle_define_vars)
+                            define_dst_node.extend(dst_nodes)
 
                 src_nodes = src_new
-            define_dst_node = self.unique_list(define_dst_node)
-            define_vars = self.unique_list(define_vars)
+            #define_dst_node = self.unique_list(define_dst_node)
+            #define_vars = self.unique_list(define_vars)
         return define_vars, define_dst_node
 
     def query_code_by_id(self, vid):
@@ -192,7 +195,7 @@ class ExtractArgsCheckPatterns:
 
     # the controls are condition statements control the callsite_id
     def query_controls(self, callsite_id):
-        query = """
+        query = """4849840
         getControlsFromCfgId(%s)
         """ % callsite_id
         controls = self.run_gremlin_query(query)
@@ -228,6 +231,17 @@ class ExtractArgsCheckPatterns:
                 return True
         return False
 
+    @staticmethod
+    def list1_VSset_list2(list1,list2):
+        if set(list1) > set(list2):
+            return '>'
+        if set(list1) == set(list2):
+            return '='
+        if set(list1) < set(list2):
+            return '<'
+        else:
+            return 'x'
+
     def query_check_patterns_path(self, callee_id, callsite_id, path, controls_path):
         arg_ids = self.query_args(callee_id)
         symbols_id_of_args, symbols_code_of_args = self.query_symbols_by_ids(arg_ids)
@@ -241,61 +255,103 @@ class ExtractArgsCheckPatterns:
             define_dst_of_args.append(define_dst_of_arg)
 
         arg_num = len(arg_ids)
-        # query_implicit_check_patterns_path
+        # I. 隐式约束 query_implicit_check_patterns_path
         implicit_check_patterns = [[] for i in range(arg_num)]
-
         for i in range(0, arg_num):
-            for j in range(0, arg_num):
-                if i == j:
+            # 1. 判断该参数是否为常量
+            #   1.1 没有用到符号
+            if not symbols_id_of_args[i]:
+                implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, "CNT"))
+                continue
+
+            # Because Joern can not identify the Global variable/const,
+            # the arg may have symbol but its define_vars_of_args is NULL.
+            # Because the global variable is not recommend, used rarely,
+            # so we set its check pattern as defined by const  "CNT"
+            # const: type 'PrimaryExpression'
+            #   1.2 有符号没却没有用于定义的变量，见全局变量，Joern不精准的原因
+            if symbols_id_of_args[i] and (not define_vars_of_args[i]):
+                implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, "CNT"))
+                continue
+
+            # If the right values of all the define nodes of the define chains' tails (define_dst_of_args[i]) are constants,
+            # the arg is defined by constant
+            #   1.3. 所有的定义语句都是常量赋值，那么最终的实参也是常量
+            flag_value = True
+            if define_dst_of_args[i]:
+                for nodeid in define_dst_of_args[i]:
+                    nodecode = self.run_gremlin_query("g.v(%s).code" % nodeid)
+                    value = nodecode.split("=", 1)
+                    if len(value) != 2:
+                        flag_value = False
+                        break
+                    rightvalue = value[1]
+                    # 此处有错误，如果是字符串常量呢？
+                    if rightvalue.isdigit() != True:
+                        flag_value = False
+                        break
+                if flag_value:
+                    implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, "CNT"))
                     continue
-                if self.is_lists_cross(symbols_id_of_args[i], symbols_id_of_args[j]):
+            for j in range(i + 1, arg_num):
+                # 2. 判断与其它参数的关系
+                #   2.1. symbols属于包含关系
+                if self.list1_VSset_list2(symbols_id_of_args[i], symbols_id_of_args[j]) == '>':
                     implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, j))
-                    # implicit_check_patterns[j].append(self.set_implicit_check_pattern(j, i))
                     continue
-                if self.is_lists_cross(define_vars_of_args[i], symbols_code_of_args[j]):
+                #if self.is_lists_cross(symbols_id_of_args[i], symbols_id_of_args[j]):
+                #    implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, j))
+                if self.list1_VSset_list2(symbols_id_of_args[i], symbols_id_of_args[j]) == '<':
+                    implicit_check_patterns[j].append(self.set_implicit_check_pattern(j, i))
+                    continue
+                if self.list1_VSset_list2(symbols_id_of_args[i], symbols_id_of_args[j]) == '=':
+                    implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, j))
+                    implicit_check_patterns[j].append(self.set_implicit_check_pattern(j, i))
+                    continue
+
+                #   2.2. var包含关系
+                if self.list1_VSset_list2(define_vars_of_args[i], symbols_code_of_args[j]) == '>':
                     implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, j))
                     continue
+                if self.list1_VSset_list2(define_vars_of_args[j], symbols_code_of_args[i]) == '>':
+                    implicit_check_patterns[i].append(self.set_implicit_check_pattern(j, i))
+                    continue
+
+                tmp_defvar_i = define_vars_of_args[i][1:len(define_vars_of_args[i])]
+                tmp_defvar_j = define_vars_of_args[j][1:len(define_vars_of_args[j])]
+                if tmp_defvar_j:
+                    if self.list1_VSset_list2(define_vars_of_args[i], tmp_defvar_j) == '>':
+                        implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, j))
+                        continue
+                if tmp_defvar_i:
+                    if self.list1_VSset_list2(define_vars_of_args[j], tmp_defvar_i) == '>':
+                        implicit_check_patterns[i].append(self.set_implicit_check_pattern(j, i))
+                        continue
+                if tmp_defvar_i and tmp_defvar_j:
+                    if self.list1_VSset_list2(tmp_defvar_j, tmp_defvar_i) == '=':
+                        implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, j))
+                        implicit_check_patterns[i].append(self.set_implicit_check_pattern(j, i))
+                        continue
+
+                #   2.3. 混合定义的情况
                 if self.is_lists_cross(define_vars_of_args[i], define_vars_of_args[j]):
                     implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, j))
+                    implicit_check_patterns[i].append(self.set_implicit_check_pattern(j, i))
                     # implicit_check_patterns[j].append(self.set_implicit_check_pattern(j, i))
                     continue
-                if not symbols_id_of_args[i]:
-                    implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, "CNT"))
-                    continue
-                # When Joern can not identify the Global variable/const,
-                # the arg may have symbol but its define_vars_of_args is NULL.
-                # Because the global variable is not recommend, used rareallsite_idly,
-                # so we set its check pattern as defined by const  "CNT"
-                # const: type 'PrimaryExpression'
-                if symbols_id_of_args[i] and (not define_vars_of_args[i]):
-                    implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, "CNT"))
-                    continue
-                # If the right values of all the define nodes of the define chains' tails (define_dst_of_args[i]) are constants,
-                # the arg is defined by constant
-                # Todo:
-                flag_value = True
-                if define_dst_of_args[i]:
-                    for nodeid in define_dst_of_args[i]:
-                        nodecode = self.run_gremlin_query("g.v(%s).code" % nodeid)
-                        value = nodecode.split("=",1)
-                        if len(value) != 2:
-                            flag_value = False
-                            break
-                        rightvalue = value[1]
-                        if rightvalue.isdigit()!= True:
-                            flag_value = False
-                            break
-                    if flag_value:
-                        implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, "CNT"))
 
+                # 3. 其它归为未知变量：后续过程间分析时需要区分是否依赖于调用者的入参
                 # the default define patten is defined by "OutVar"
-                implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, "OutVar"))
 
-        # query_explicit_check_patterns_path:
+                # implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, "OutVar"))
+
+
+        # II. 显式约束 query_explicit_check_patterns_path:
         # If there is a define node on one symbol of the @arg, whose location is between the control node @control
         # and the callsite, then the @control is not take an explicit check on the @arg.
         # Else if the defvar(@control) ^ defvar(@arg) != [], then @control is take an explicit check on the @arg.
         explicit_check_patterns = [[] for i in range(arg_num)]
+        '''
         explicit_checkinfo_args = [[] for i in range(arg_num)]
         log_arg_vs_control = []
         symbols_id_of_controls, symbols_code_of_controls = self.query_symbols_by_ids(controls_path)
@@ -354,7 +410,8 @@ class ExtractArgsCheckPatterns:
             implicit_check_patterns[i] = self.unique_list(implicit_check_patterns[i])
         for i in range(0, len(explicit_check_patterns)):
             explicit_check_patterns[i] = self.unique_list(explicit_check_patterns[i])
-
+        
+        '''
         return implicit_check_patterns, explicit_check_patterns
 
     def query_check_patterns_path_thread(self, callee_id, callsite_id, path, controls_path, result, index):
@@ -388,7 +445,7 @@ class ExtractArgsCheckPatterns:
             print "\n"
             # test-
 
-            '''
+
             paths_count = len(all_paths)
             # print "len(all_paths) = %d" % len(all_paths)
             if paths_count == 0:
@@ -409,7 +466,7 @@ class ExtractArgsCheckPatterns:
                 # 路径约束聚合
                 check_patterns_callee = self.unique_list(check_patterns_callee)
                 check_patterns.append([callee_id, check_patterns_callee])
-            '''
+
         return check_patterns
 
     # Todo
@@ -480,7 +537,7 @@ if __name__ == '__main__':
     print "\nBegin time: %s \n" % start_time
     # callee_ids = [6193056]
     # callee_ids = [4994242]
-    # callee_ids = [4849840]
+    #callee_ids = [42153]
     function_name = "BUF_strlcat"
 
     extract_check_patterns = ExtractArgsCheckPatterns(function_name)
