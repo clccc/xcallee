@@ -232,6 +232,14 @@ class ExtractArgsCheckPatterns:
         return False
 
     @staticmethod
+    def get_index_same_items_of_list1(list1, list2):
+        indexList = []
+        for i in range(0,len(list1)):
+            if list1[i] in list2:
+                indexList.append(i)
+        return indexList
+
+    @staticmethod
     def list1_VSset_list2(list1,list2):
         if set(list1) > set(list2):
             return '>'
@@ -255,8 +263,10 @@ class ExtractArgsCheckPatterns:
             define_dst_of_args.append(define_dst_of_arg)
 
         arg_num = len(arg_ids)
+
         # I. 隐式约束 query_implicit_check_patterns_path
         implicit_check_patterns = [[] for i in range(arg_num)]
+        '''
         for i in range(0, arg_num):
             # 1. 判断该参数是否为常量
             #   1.1 没有用到符号
@@ -344,7 +354,7 @@ class ExtractArgsCheckPatterns:
                 # the default define patten is defined by "OutVar"
 
                 # implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, "OutVar"))
-
+        '''
 
         # II. 显式约束 query_explicit_check_patterns_path:
         # If there is a define node on one symbol of the @arg, whose location is between the control node @control
@@ -352,7 +362,7 @@ class ExtractArgsCheckPatterns:
         # Else if the defvar(@control) ^ defvar(@arg) != [], then @control is take an explicit check on the @arg.
         explicit_check_patterns = [[] for i in range(arg_num)]
         explicit_checkinfo_args = [[] for i in range(arg_num)]
-        log_arg_vs_control = []
+        checked_arg_control = []
         symbols_id_of_controls, symbols_code_of_controls = self.query_symbols_by_ids(controls_path)
         define_vars_of_controls = []
         define_dst_of_controls = []
@@ -362,49 +372,53 @@ class ExtractArgsCheckPatterns:
             define_vars_of_controls.append(defvars_of_control)
             define_dst_of_controls.append(define_dst_of_control)
 
+        # 1. 筛选有效的条件检查，并与对应的参数关联
         for index_arg in range(0, arg_num):
             for index_control in range(0, len(controls_path)):
+                checked_var_of_args = self.get_index_same_items_of_list1(define_vars_of_args[index_arg],
+                                                   define_vars_of_controls[index_control])
                 location_control = path.index(controls_path[index_control])
-                flag_valid_control = True
-                for dst_node in define_dst_of_args[index_arg]:
-                    location_dst_node = path.index(dst_node)
-                    # there is a definition  appeared after control condition in @path,
-                    # so the explict check of @control is failed
-                    if location_control > location_dst_node:
-                        flag_valid_control = False
-                        break
-                if flag_valid_control:
-                    # log the relation between arg and valid controls
-                    if self.is_lists_cross(define_vars_of_args[index_arg], define_vars_of_controls[index_control]):
-                        log_arg_vs_control.append([index_arg, index_control])
-                    # single arg checked by in condition control
+                if checked_var_of_args:
+                    flag_valid_control = True
+                    for index_checked_var_of_args in checked_var_of_args:
+                        location_checked_dst_node = path.index(define_dst_of_args[index_checked_var_of_args])
+                        # if one control check on var, but the var was defined again after the control,
+                        # then the control is not consided as a valid check on var
+                        if location_control > location_checked_dst_node:
+                            flag_valid_control = False
+                            break
+                    if flag_valid_control:
+                        # log the relation between arg and valid controls
+                        checked_arg_control.append([index_arg, index_control])
 
-        # collect check info from @log_arg_vs_control into each arg
-        for index_arg in range(0, arg_num):
-            for log_check in log_arg_vs_control:
-                if log_check[0] == index_arg:
-                    index_control = log_check[1]
-                    # get some useful control information
-                    # self.query_parsed_control(controls_path[index_control],
-                    #                           controls_path[index_control - 1])  is wrong
-                    index_next_node = path.index(controls_path[index_control]) - 1
-                    flowlabel_code, operate_code, children = \
-                        self.query_parsed_control(controls_path[index_control], path[index_next_node])
+        # 2.解析有效的条件检查；收集条件检查的 逻辑运算符号，结果满足条件（True，False），相关参数
+        # collect check info from @checked_arg_control into each arg
+        for c_arg_control in checked_arg_control:
+            index_arg = c_arg_control[0]
+            index_control = c_arg_control[1]
 
-                    args_by_control = []
-                    for log_check_2 in log_arg_vs_control:
-                        if log_check_2[1] == index_control:
-                            if log_check_2[0] != index_arg:
-                                args_by_control.append(log_check_2[0])
-                    args_by_control = self.unique_list(args_by_control)
-                    args_by_control.sort()
-                    explicit_checkinfo_args[index_arg].append([flowlabel_code, operate_code, args_by_control])
+            # get some useful control information
+            # self.query_parsed_control(controls_path[index_control],
+            #                           controls_path[index_control - 1])  is wrong
+            index_next_node = path.index(controls_path[index_control]) - 1
+            flowlabel_code, operate_code, children = \
+                self.query_parsed_control(controls_path[index_control], path[index_next_node])
+
+            args_by_control = []
+            for log_check_2 in checked_arg_control:
+                if log_check_2[1] == index_control:
+                    if log_check_2[0] != index_arg:
+                        args_by_control.append(log_check_2[0])
+            args_by_control = self.unique_list(args_by_control)
+            args_by_control.sort()
+            explicit_checkinfo_args[index_arg].append([flowlabel_code, operate_code, args_by_control])
 
         for index_arg in range(0, arg_num):
             for checkinfo in explicit_checkinfo_args[index_arg]:
                 explicit_check_patterns[index_arg].append(
                     self.set_explicit_check_pattern(arg_checked=index_arg, checkinfo=checkinfo))
 
+        # 去重
         for i in range(0, len(implicit_check_patterns)):
             implicit_check_patterns[i] = self.unique_list(implicit_check_patterns[i])
         for i in range(0, len(explicit_check_patterns)):
@@ -535,12 +549,12 @@ if __name__ == '__main__':
     print "\nBegin time: %s \n" % start_time
     # callee_ids = [6193056]
     # callee_ids = [4994242]
-    #callee_ids = [42153]
+    callee_ids = [42153]
     function_name = "BUF_strlcat"
 
     extract_check_patterns = ExtractArgsCheckPatterns(function_name)
-    #patterns = extract_check_patterns.run(False, callee_ids)
-    patterns = extract_check_patterns.run(flag_thread=False)
+    patterns = extract_check_patterns.run(False, callee_ids)
+    #patterns = extract_check_patterns.run(flag_thread=False)
 
     """
     flowlabel_code, operate_code, children = \
