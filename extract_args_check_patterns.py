@@ -417,30 +417,30 @@ class ExtractArgsCheckPatterns:
                 self.query_parsed_control(controls_path[index_control], path[index_next_node])
             norm_cmp_items = []
             norm_cmp_op = ""
-            norm_cmp_value = ""
+            norm_cmp_value = []
 
             if type_exp == "Identifier":
                 if flowlabel_code == "True":
-                    norm_cmp_value = "notNULL"
+                    norm_cmp_value.append("notNULL")
                     norm_cmp_op = "=="
                 else:
-                    norm_cmp_value = "NULL"
+                    norm_cmp_value.append("NULL")
                     norm_cmp_op = "=="
                 norm_cmp_items = [index_arg]
                 explicit_checkinfo_args[index_arg].append([norm_cmp_items,norm_cmp_op,norm_cmp_value])
                 continue
             # op = !
-            if type_exp == "UnaryOp":
+            elif type_exp == "UnaryOp":
                 if flowlabel_code == "True":
-                    norm_cmp_value = "NULL"
+                    norm_cmp_value.append("NULL")
                 else:
-                    norm_cmp_value = "notNULL"
+                    norm_cmp_value.append("notNULL")
                 norm_cmp_op = "=="
                 norm_cmp_items = [index_arg]
                 explicit_checkinfo_args[index_arg].append([norm_cmp_items, norm_cmp_op, norm_cmp_value])
                 continue
 
-            if type_exp == "EqualityExpression":
+            elif type_exp == "EqualityExpression":
                 if flowlabel_code == "True":
                     norm_cmp_op = operator_expr
                 else:
@@ -450,30 +450,51 @@ class ExtractArgsCheckPatterns:
                         norm_cmp_op = "=="
 
                 # child = [id, type, code]
-                for child in children_expr:
-                    if child[2] == "NULL":
-                        norm_cmp_value = "NULL"
-                        norm_cmp_items = args_by_control
-                        explicit_checkinfo_args[index_arg].append([norm_cmp_items, norm_cmp_op, norm_cmp_value])
+                flag_xchild_find = False
+                xchild_id = -1
+                for i in range(0, len(children_expr)):
+                    child = children_expr[i]
+                    # find which child contains the vars of the checked arg
+                    if not flag_xchild_find:
+                        for symbol in symbols_code_of_args[index_arg]:
+                            if symbol in child[2]:
+                                flag_xchild_find = True
+                                xchild_id = child[0]
+                                norm_cmp_items.append(index_arg)
+                    # 判断该index_arg相关的child是否包括那些参数的符号变量，放入norm_cmp_items
+                    if child[0] == xchild_id:
+                        for relate_arg in args_by_control:
+                            for symbol_rarg in symbols_code_of_args[relate_arg]:
+                                if symbol_rarg in child[2]:
+                                    norm_cmp_items.append(relate_arg)
+                                    break
+
+                    # 判断该非index_arg相关的child是否包括那些参数的符号变量，放入norm_cmp_value
+                    if child[0] != xchild_id:
+                        for relate_arg in args_by_control:
+                            for symbol_rarg in symbols_code_of_args[relate_arg]:
+                                if symbol_rarg in child[2]:
+                                    norm_cmp_value.append("arg_%d" % relate_arg)
+                                    break
+                        if len(norm_cmp_value) == 0:
+                            # Because the Joern consides "NULL" as a Identifier, so it requires special handling.
+                            if child[2] == "NULL":
+                                norm_cmp_value.append("NULL")
+
+                explicit_checkinfo_args[index_arg].append([norm_cmp_items, norm_cmp_op, norm_cmp_value])
+
+            elif type_exp == "RelationalExpression":
+
+
+
+
+
 
 
                 continue
 
-
-            if type_exp == "RelationalExpression":
-                continue
             else:
                 print "error:unknown type of expression: %s" % type_exp
-                continue
-
-            #flowlabel_code, operate_code, children = \
-            #    self.query_parsed_control(controls_path[index_control], path[index_next_node])
-
-            # 检查某表达式
-            #if operate_code == '':
-
-
-
 
             explicit_checkinfo_args[index_arg].append([flowlabel_code, operate_code, args_by_control])
 
