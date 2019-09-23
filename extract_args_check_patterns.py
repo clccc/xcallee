@@ -351,7 +351,6 @@ class ExtractArgsCheckPatterns:
         # and the callsite, then the @control is not take an explicit check on the @arg.
         # Else if the defvar(@control) ^ defvar(@arg) != [], then @control is take an explicit check on the @arg.
         explicit_check_patterns = [[] for i in range(arg_num)]
-        '''
         explicit_checkinfo_args = [[] for i in range(arg_num)]
         log_arg_vs_control = []
         symbols_id_of_controls, symbols_code_of_controls = self.query_symbols_by_ids(controls_path)
@@ -410,8 +409,7 @@ class ExtractArgsCheckPatterns:
             implicit_check_patterns[i] = self.unique_list(implicit_check_patterns[i])
         for i in range(0, len(explicit_check_patterns)):
             explicit_check_patterns[i] = self.unique_list(explicit_check_patterns[i])
-        
-        '''
+
         return implicit_check_patterns, explicit_check_patterns
 
     def query_check_patterns_path_thread(self, callee_id, callsite_id, path, controls_path, result, index):
