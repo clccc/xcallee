@@ -182,6 +182,8 @@ class ExtractArgsCheckPatterns:
         flowlabel = self.run_gremlin_query(query)
         return flowlabel
 
+    # parseControl return [flowlabel_code, ids_child[0], tpye_code, operator_code, children]
+    # children = [id,type,code]
     def query_parsed_control(self, control_id, next_node):
         query = """
         parseControl(%s,%s)
@@ -189,9 +191,12 @@ class ExtractArgsCheckPatterns:
         control_info = self.run_gremlin_query(query)
 
         flowlabel_code = control_info[0]
-        operate_code = control_info[1]
-        children = control_info[2]
-        return flowlabel_code, operate_code, children
+        id_exp = control_info[1]
+        type_exp = control_info[2]
+        operator_expr = control_info[3]
+        children_expr = control_info[4]
+
+        return flowlabel_code, id_exp, type_exp, operator_expr, children_expr
 
     # the controls are condition statements control the callsite_id
     def query_controls(self, callsite_id):
@@ -397,20 +402,79 @@ class ExtractArgsCheckPatterns:
             index_arg = c_arg_control[0]
             index_control = c_arg_control[1]
 
-            # get some useful control information
-            # self.query_parsed_control(controls_path[index_control],
-            #                           controls_path[index_control - 1])  is wrong
-            index_next_node = path.index(controls_path[index_control]) - 1
-            flowlabel_code, operate_code, children = \
-                self.query_parsed_control(controls_path[index_control], path[index_next_node])
-
             args_by_control = []
-            for log_check_2 in checked_arg_control:
-                if log_check_2[1] == index_control:
-                    if log_check_2[0] != index_arg:
-                        args_by_control.append(log_check_2[0])
+            for tmp_arg_control in checked_arg_control:
+                if tmp_arg_control[1] == index_control:
+                    if tmp_arg_control[0] != index_arg:
+                        args_by_control.append(tmp_arg_control[0])
             args_by_control = self.unique_list(args_by_control)
             args_by_control.sort()
+
+            # [flowlabel_code, ids_child[0], tpye_code, operator_code, children]
+            # children = [id,type,code]
+            index_next_node = path.index(controls_path[index_control]) - 1
+            flowlabel_code, id_exp, type_exp, operator_expr, children_expr = \
+                self.query_parsed_control(controls_path[index_control], path[index_next_node])
+            norm_cmp_items = []
+            norm_cmp_op = ""
+            norm_cmp_value = ""
+
+            if type_exp == "Identifier":
+                if flowlabel_code == "True":
+                    norm_cmp_value = "notNULL"
+                    norm_cmp_op = "=="
+                else:
+                    norm_cmp_value = "NULL"
+                    norm_cmp_op = "=="
+                norm_cmp_items = [index_arg]
+                explicit_checkinfo_args[index_arg].append([norm_cmp_items,norm_cmp_op,norm_cmp_value])
+                continue
+            # op = !
+            if type_exp == "UnaryOp":
+                if flowlabel_code == "True":
+                    norm_cmp_value = "NULL"
+                else:
+                    norm_cmp_value = "notNULL"
+                norm_cmp_op = "=="
+                norm_cmp_items = [index_arg]
+                explicit_checkinfo_args[index_arg].append([norm_cmp_items, norm_cmp_op, norm_cmp_value])
+                continue
+
+            if type_exp == "EqualityExpression":
+                if flowlabel_code == "True":
+                    norm_cmp_op = operator_expr
+                else:
+                    if operator_expr == "==":
+                        norm_cmp_op = "!="
+                    else:
+                        norm_cmp_op = "=="
+
+                # child = [id, type, code]
+                for child in children_expr:
+                    if child[2] == "NULL":
+                        norm_cmp_value = "NULL"
+                        norm_cmp_items = args_by_control
+                        explicit_checkinfo_args[index_arg].append([norm_cmp_items, norm_cmp_op, norm_cmp_value])
+
+
+                continue
+
+
+            if type_exp == "RelationalExpression":
+                continue
+            else:
+                print "error:unknown type of expression: %s" % type_exp
+                continue
+
+            #flowlabel_code, operate_code, children = \
+            #    self.query_parsed_control(controls_path[index_control], path[index_next_node])
+
+            # 检查某表达式
+            #if operate_code == '':
+
+
+
+
             explicit_checkinfo_args[index_arg].append([flowlabel_code, operate_code, args_by_control])
 
         for index_arg in range(0, arg_num):
@@ -549,12 +613,12 @@ if __name__ == '__main__':
     print "\nBegin time: %s \n" % start_time
     # callee_ids = [6193056]
     # callee_ids = [4994242]
-    callee_ids = [42153]
+    #callee_ids = [42153]
     function_name = "BUF_strlcat"
 
     extract_check_patterns = ExtractArgsCheckPatterns(function_name)
-    patterns = extract_check_patterns.run(False, callee_ids)
-    #patterns = extract_check_patterns.run(flag_thread=False)
+    #patterns = extract_check_patterns.run(False, callee_ids)
+    patterns = extract_check_patterns.run(flag_thread=False)
 
     """
     flowlabel_code, operate_code, children = \

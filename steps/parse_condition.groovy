@@ -1,17 +1,17 @@
+//解析control，返回 真值，表达式id，表达式类型，逻辑运算符，表达式孩子节点信息（id，type，code）
 Object.metaClass.parseControl= { control, nextCfgId ->
     try {
         //Protected code
-        operator = g.v(control).outE('IS_AST_PARENT').inV.operator.toList()
-        if (operator.size() == 1)
-            operator_code = operator[0]
-        else{
-            operator_code = " "
+        ids_child = g.v(control).outE('IS_AST_PARENT').inV.toList()
+        if (ids_child.size() == 1){
+            tpye_code = g.v(ids_child[0]).type
+            operator_code = g.v(ids_child[0]).operator
         }
         flowlabel_code = _getFlowlabelOfCfgIds(control, nextCfgId)
         children = g.v(control).outE('IS_AST_PARENT').inV.out.transform{
-            [it.code, it.type]
+            [it.id, it.type, it.code]
         }
-        return [flowlabel_code, operator_code, children]
+        return [flowlabel_code, ids_child[0], tpye_code, operator_code, children]
     } catch(Exception ex) {
         //Catch block
         println "parseControl failed: "
