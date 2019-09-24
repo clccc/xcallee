@@ -2,19 +2,23 @@
 Object.metaClass.parseControl= { control, nextCfgId ->
     try {
         //Protected code
-        ids_child = g.v(control).outE('IS_AST_PARENT').inV.toList()
+        ids_child = g.v(control).outE('IS_AST_PARENT').inV.id.toList()
         if (ids_child.size() == 1){
             tpye_code = g.v(ids_child[0]).type
             operator_code = g.v(ids_child[0]).operator
         }
+
         flowlabel_code = _getFlowlabelOfCfgIds(control, nextCfgId)
+
         children = g.v(control).outE('IS_AST_PARENT').inV.out.transform{
             [it.id, it.type, it.code]
         }
+
         return [flowlabel_code, ids_child[0], tpye_code, operator_code, children]
     } catch(Exception ex) {
         //Catch block
-        println "parseControl failed: "
+
+        println "parseControl failed: " + ex
         println control
         println nextCfgId
     }
@@ -34,7 +38,7 @@ Object.metaClass._getFlowlabelOfCfgIds= { id_first, id_next ->
         }
         return 'Not found'
     } catch(Exception ex) {
-        println "_getFlowlabelOfCfgIds failed: "
+        println "_getFlowlabelOfCfgIds failed: " + ex
         println id_first
         println id_next
     }
