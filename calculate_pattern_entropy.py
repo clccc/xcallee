@@ -9,13 +9,13 @@
 
 import math
 from ObjDataAndBinFile import ObjDataAndBinFile
-
+from display_data import DisplayEntropyInfo
 
 class CalculateEntropy:
 
     def __init__(self, callee_patterns, threshold):
         self.patterns = callee_patterns
-        self.args_count = len(callee_patterns[0][1][0])
+        self.args_count = len(callee_patterns[0][1][0][0])
         self.threshold = threshold
 
     @staticmethod
@@ -107,6 +107,7 @@ class CalculateEntropy:
 if __name__ == '__main__':
 
     import datetime
+
     starttime = datetime.datetime.now()
     print "\nBegin time: %s"%starttime
     """
@@ -117,10 +118,14 @@ if __name__ == '__main__':
     print CalculateEntropy.calculate_entropy([1], 2)
     """
 
-    filename = "Data/av_stristr.data"
+    filename = "Data/BUF_strlcat.data"
     patterns = ObjDataAndBinFile.binfile2objdata(filename)
     identify = CalculateEntropy(patterns, 1.5)
-    print identify.entropy_callee()
+    entropy = identify.get_entropy()
+
+    d = DisplayEntropyInfo(entropy)
+    d.display_entropy()
+    #print entropy
     endtime = datetime.datetime.now()
     print "\nEnd: %s"%endtime
     print "\nTime Used: %s"%(endtime - starttime)
