@@ -757,12 +757,12 @@ if __name__ == '__main__':
     print "\nBegin time: %s \n" % start_time
     #callee_ids = [637251]
     #callee_ids = [73439]
-    #callee_ids = [42153]
+    callee_ids = [42153]
     function_name = "BUF_strlcat"
 
     extract_check_patterns = ExtractArgsCheckPatterns(function_name)
-    #patterns = extract_check_patterns.run(False, callee_ids)
-    patterns = extract_check_patterns.run(flag_thread=False)
+    patterns = extract_check_patterns.run(False, callee_ids)
+    #patterns = extract_check_patterns.run(flag_thread=False)
 
     """
     flowlabel_code, operate_code, children = \
