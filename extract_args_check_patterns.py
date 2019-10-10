@@ -271,6 +271,8 @@ class ExtractArgsCheckPatterns:
 
     @staticmethod
     def list1_VSset_list2(list1,list2):
+        if (not list1) or (not list2):
+            return "xx"
         if set(list1) > set(list2):
             return '>'
         if set(list1) == set(list2):
@@ -657,6 +659,7 @@ class ExtractArgsCheckPatterns:
         print "len(callee_ids) = %d " % (len(callee_ids))
         # -test
         for callee_id in callee_ids:
+            check_patterns_callee = []
             i = i+1
             # get callsite_id = cfgnodid of callee_id
             callsite_id = self.query_callsite_id(callee_id)
@@ -771,13 +774,13 @@ if __name__ == '__main__':
     print "\nBegin time: %s \n" % start_time
     #callee_ids = [637251]
     #callee_ids = [73439]
-    #callee_ids = [42153]
+    callee_ids = [13922]
     #function_name = "BUF_strlcat"
     function_name = "memcpy"
 
     extract_check_patterns = ExtractArgsCheckPatterns(function_name)
-    #patterns = extract_check_patterns.run(False, callee_ids)
-    patterns = extract_check_patterns.run(flag_thread=False)
+    patterns = extract_check_patterns.run(False, callee_ids)
+    #patterns = extract_check_patterns.run(flag_thread=False)
 
     """
     flowlabel_code, operate_code, children = \
