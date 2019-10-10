@@ -20,10 +20,10 @@ class ExtractArgsCheckPatterns:
     def set_implicit_check_pattern(self, arg_checked, arg_by):
         # CNT is constant, OutVar is variable from outside of caller
         if arg_by == "CNT":
-            return "arg_%s <- %s" % (arg_checked, arg_by)
+            return "arg_%s DEFBY %s" % (arg_checked, arg_by)
         if arg_by == "OutVar":
-            return "arg_%s <- %s" % (arg_checked, arg_by)
-        return "arg_%s <- arg_%s" % (arg_checked, arg_by)
+            return "arg_%s DEFBY %s" % (arg_checked, arg_by)
+        return "arg_%s DEFBY arg_%s" % (arg_checked, arg_by)
     '''
     def set_explicit_check_pattern(self, arg_checked, checkinfo):
 
@@ -60,6 +60,14 @@ class ExtractArgsCheckPatterns:
         # filename = "Data/OutStatsData_%s.data"%time.strftime('%Y%m%d-%H%M%S')
         # print "生成GetOutStatsData的原始数据文件:%s" % file_path
         self.file_io_provider.objdata2file(data, file_path)
+
+    def query_loc_callsite(self, callee_id):
+        query = """
+            g.v(%s).statements.transform{[g.v(it.functionId).functionToFile.filepath, it.location]}
+            """ % callee_id
+        result = self.run_gremlin_query(query)
+        loc = "%s: %s" % (result[0][0][0], result[0][1])
+        return loc
 
     def query_callee_ids(self, function_name):
         query = """
@@ -745,7 +753,13 @@ class ExtractArgsCheckPatterns:
         else:
             check_patterns = self.run_no_thread(callee_ids)
         print "check_patterns =： "
-        print check_patterns
+        #print check_patterns
+        # display chek_patterns
+        for pattern in check_patterns:
+            loc = self.query_loc_callsite(pattern[0])
+            print "%s: %s" % (pattern[0], loc)
+            for path_pattern in pattern[1]:
+                print "\t %s" % path_pattern
         ObjDataAndBinFile.objdata2file(check_patterns, filepath)
         return check_patterns
 
