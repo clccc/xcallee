@@ -561,7 +561,7 @@ class ExtractArgsCheckPatterns:
                 tmp_r_args = self.unique_list(r_args)
                 tmp_r_args.sort()
                 for tmp_arg in tmp_r_args:
-                    norm_cmp_value.append("arg_%d" % tmp_r_args)
+                    norm_cmp_value.append("arg_%d" % tmp_arg)
 
                 if len(r_args) == 0:
                     # Because the Joern consides "NULL" as a Identifier, so it requires special handling.
@@ -617,7 +617,7 @@ class ExtractArgsCheckPatterns:
                 tmp_r_args = self.unique_list(r_args)
                 tmp_r_args.sort()
                 for tmp_arg in tmp_r_args:
-                    norm_cmp_value.append("arg_%d" % tmp_r_args)
+                    norm_cmp_value.append("arg_%d" % tmp_arg)
 
                 if len(r_args) == 0:
                     # Because the Joern consides "NULL" as a Identifier, so it requires special handling.
@@ -762,8 +762,8 @@ if __name__ == '__main__':
     function_name = "memcpy"
 
     extract_check_patterns = ExtractArgsCheckPatterns(function_name)
-    patterns = extract_check_patterns.run(False, callee_ids)
-    #patterns = extract_check_patterns.run(flag_thread=False)
+    #patterns = extract_check_patterns.run(False, callee_ids)
+    patterns = extract_check_patterns.run(flag_thread=False)
 
     """
     flowlabel_code, operate_code, children = \
