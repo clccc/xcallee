@@ -311,10 +311,16 @@ class ExtractArgsCheckPatterns:
             # Because the global variable is not recommend, used rarely,
             # so we set its check pattern as defined by const  "CNT"
             # const: type 'PrimaryExpression'
-            #   1.2 有符号没却没有用于定义的变量，见全局变量，Joern不精准的原因
+            #   1.2 有符号没却没有用于定义的变量 and 符号代码全为大写字符，则判断为全局变量，Joern不精准的原因
             if symbols_id_of_args[i] and (not define_vars_of_args[i]):
-                implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, "CNT"))
-                continue
+                flag_notupper = False
+                for symbol in symbols_code_of_args[i]:
+                    if not symbol.isupper():
+                        flag_notupper = True
+                        break
+                if not flag_notupper:
+                    implicit_check_patterns[i].append(self.set_implicit_check_pattern(i, "CNT"))
+                    continue
 
             # If the right values of all the define nodes of the define chains' tails (define_dst_of_args[i]) are constants,
             # the arg is defined by constant
@@ -774,13 +780,13 @@ if __name__ == '__main__':
     print "\nBegin time: %s \n" % start_time
     #callee_ids = [637251]
     #callee_ids = [73439]
-    callee_ids = [13922]
+    #callee_ids = [23648]
     #function_name = "BUF_strlcat"
     function_name = "memcpy"
 
     extract_check_patterns = ExtractArgsCheckPatterns(function_name)
-    patterns = extract_check_patterns.run(False, callee_ids)
-    #patterns = extract_check_patterns.run(flag_thread=False)
+    #patterns = extract_check_patterns.run(False, callee_ids)
+    patterns = extract_check_patterns.run(flag_thread=False)
 
     """
     flowlabel_code, operate_code, children = \

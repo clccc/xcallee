@@ -2,6 +2,7 @@
 follow the @path,add new id into the path, gen @newpaths
 */
 Object.metaClass.getBackwardPaths = { calleeid ->
+    println "calleeid = " + calleeid
     MAX_PATHS = 100  // the max number of paths allowed to search
     cfgid = g.v(calleeid)._().statements().id.toList().toList()[0]
     if(g.v(cfgid).isCFGNode != "True")
@@ -14,10 +15,11 @@ Object.metaClass.getBackwardPaths = { calleeid ->
     allpaths = []     // all complete paths have been searched
     while (paths.size() != 0)
     {
-        // println "paths.size() = " + paths.size()
-        // println "allpaths.size() = " + allpaths.size()
+         //println "paths.size() = " + paths.size()
+         //println "allpaths.size() = " + allpaths.size()
 
         newpaths = genNewPaths(paths, MAX_PATHS)
+        //println "newpaths = " + newpaths
         // if it can not gen new path any more, it is time to break loop
         if (newpaths.size ==0)
             break
