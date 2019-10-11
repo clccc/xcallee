@@ -57,18 +57,18 @@ check_patterns =：
 65274: /mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 448:1:13244:13272
 	 [[['arg_0 DEFBY arg_2'], [], []], [[u'f(arg_0) != f(NULL)'], [], []]]
 65363: /mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 503:1:14201:14221
-	 [[[], ['arg_2 DEFBY arg_1'], []], [[], ['f(arg_1, arg_2) == f(NULL)'], [u'f(arg_2) >= f(arg_2)', 'f(arg_2, arg_1) == f(NULL)']]]
-	 [[['arg_0 DEFBY arg_1', 'arg_0 DEFBY arg_2'], ['arg_2 DEFBY arg_1'], []], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', 'f(arg_0, arg_1, arg_2) == f(NULL)', u'f(arg_0) >= f(arg_0)', u"f(arg_0) == f(':')"], ['f(arg_1, arg_0, arg_2) == f(NULL)'], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2, arg_0, arg_1) == f(NULL)']]]
-	 [[['arg_0 DEFBY arg_1', 'arg_0 DEFBY arg_2'], ['arg_2 DEFBY arg_1'], []], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', 'f(arg_0, arg_1, arg_2) == f(NULL)', u'f(arg_0) >= f(arg_0)', u"f(arg_0) == f('}')", u"f(arg_0) == f(':')"], ['f(arg_1, arg_0, arg_2) == f(NULL)'], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2, arg_0, arg_1) == f(NULL)']]]
-	 [[['arg_0 DEFBY arg_2'], ['arg_2 DEFBY arg_1'], []], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', u'f(arg_0) >= f(arg_0)', u"f(arg_0) == f(':')"], ['f(arg_1, arg_2) == f(NULL)'], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2, arg_1) == f(NULL)']]]
-	 [[['arg_0 DEFBY arg_2'], ['arg_2 DEFBY arg_1'], []], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', u'f(arg_0) >= f(arg_0)', u"f(arg_0) == f('}')", u"f(arg_0) == f(':')"], ['f(arg_1, arg_2) == f(NULL)'], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2, arg_1) == f(NULL)']]]
-	 [[['arg_0 DEFBY arg_2'], ['arg_2 DEFBY arg_1'], []], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', u'f(arg_0) >= f(arg_0)', u"f(arg_0) == f('}')"], ['f(arg_1, arg_2) == f(NULL)'], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2, arg_1) == f(NULL)']]]
+	 [[[], [], ['arg_2 DEFBY arg_1']], [[], ['f(arg_1, arg_2) == f(NULL)'], [u'f(arg_2) >= f(arg_2)', 'f(arg_2, arg_1) == f(NULL)']]]
+	 [[['arg_0 DEFBY arg_1', 'arg_0 DEFBY arg_2'], [], ['arg_2 DEFBY arg_1']], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', 'f(arg_0, arg_1, arg_2) == f(NULL)', u'f(arg_0) >= f(arg_0)', u"f(arg_0) == f(':')"], ['f(arg_1, arg_0, arg_2) == f(NULL)'], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2, arg_0, arg_1) == f(NULL)']]]
+	 [[['arg_0 DEFBY arg_1', 'arg_0 DEFBY arg_2'], [], ['arg_2 DEFBY arg_1']], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', 'f(arg_0, arg_1, arg_2) == f(NULL)', u'f(arg_0) >= f(arg_0)', u"f(arg_0) == f('}')", u"f(arg_0) == f(':')"], ['f(arg_1, arg_0, arg_2) == f(NULL)'], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2, arg_0, arg_1) == f(NULL)']]]
+	 [[['arg_0 DEFBY arg_2'], [], ['arg_2 DEFBY arg_1']], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', u'f(arg_0) >= f(arg_0)', u"f(arg_0) == f(':')"], ['f(arg_1, arg_2) == f(NULL)'], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2, arg_1) == f(NULL)']]]
+	 [[['arg_0 DEFBY arg_2'], [], ['arg_2 DEFBY arg_1']], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', u'f(arg_0) >= f(arg_0)', u"f(arg_0) == f('}')", u"f(arg_0) == f(':')"], ['f(arg_1, arg_2) == f(NULL)'], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2, arg_1) == f(NULL)']]]
+	 [[['arg_0 DEFBY arg_2'], [], ['arg_2 DEFBY arg_1']], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', u'f(arg_0) >= f(arg_0)', u"f(arg_0) == f('}')"], ['f(arg_1, arg_2) == f(NULL)'], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2, arg_1) == f(NULL)']]]
 65408: /mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 493:2:14086:14105
-	 [[['arg_0 DEFBY arg_1', 'arg_0 DEFBY arg_2'], ['arg_2 DEFBY arg_1'], []], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', 'f(arg_0) == f(notNULL)', u'f(arg_0) >= f(arg_0)', u'f(arg_0) != f(NULL)'], [], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2) == f(notNULL)', u"f(arg_2) == f(':')"]]]
-	 [[['arg_0 DEFBY arg_1', 'arg_0 DEFBY arg_2'], ['arg_2 DEFBY arg_1'], []], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', 'f(arg_0) == f(notNULL)', u'f(arg_0) >= f(arg_0)', u'f(arg_0) != f(NULL)'], [u"f(arg_1, arg_2) == f(':')"], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2) == f(notNULL)', u"f(arg_2) == f('}')", u"f(arg_2, arg_1) == f(':')"]]]
+	 [[['arg_0 DEFBY arg_1', 'arg_0 DEFBY arg_2'], [], ['arg_2 DEFBY arg_1']], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', 'f(arg_0) == f(notNULL)', u'f(arg_0) >= f(arg_0)', u'f(arg_0) != f(NULL)'], [], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2) == f(notNULL)', u"f(arg_2) == f(':')"]]]
+	 [[['arg_0 DEFBY arg_1', 'arg_0 DEFBY arg_2'], [], ['arg_2 DEFBY arg_1']], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', 'f(arg_0) == f(notNULL)', u'f(arg_0) >= f(arg_0)', u'f(arg_0) != f(NULL)'], [u"f(arg_1, arg_2) == f(':')"], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2) == f(notNULL)', u"f(arg_2) == f('}')", u"f(arg_2, arg_1) == f(':')"]]]
 	 [[[], [], []], [[], [], []]]
 65569: /mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 464:2:13593:13613
-	 [[[], ['arg_2 DEFBY arg_1'], []], [[], [u'f(arg_1, arg_2) != f(NULL)'], [u'f(arg_2) >= f(arg_2)', u'f(arg_2, arg_1) != f(NULL)']]]
+	 [[[], [], ['arg_2 DEFBY arg_1']], [[], [u'f(arg_1, arg_2) != f(NULL)'], [u'f(arg_2) >= f(arg_2)', u'f(arg_2, arg_1) != f(NULL)']]]
 	 [[[], [], []], [[], [u'f(arg_1) != f(NULL)'], [u'f(arg_2) >= f(arg_2)']]]
 69334: /mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 1362:1:32445:32480
 	 [[[], [], ['arg_2 DEFBY arg_0']], [[u'f(arg_0) <= f(arg_1, arg_2)'], [u'f(arg_1, arg_2) >= f(arg_0)'], [u'f(arg_2, arg_1) >= f(arg_0)']]]

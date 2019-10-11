@@ -28,7 +28,7 @@ class DisplayEntropyInfo:
 
     def display_entropy(self):
         sorted_entropy = self.sort_entropy()
-        print "\n# Total entropy | location | callsite id | implict-check | explict check\n"
+        print "\n# Total entropy | implict-check | explict check | callsite id | location\n"
         for en in sorted_entropy:
             print en
 
@@ -37,7 +37,9 @@ class DisplayEntropyInfo:
         for en in self.entropy:
             sum_entropy = sum(en[1])
             sum_entropy += sum(en[2])
+            #sum_entropy = round(en[1][2] + en[2][2],2)
+            sum_entropy = round(sum_entropy,2)
             loc = self.query_loc_callsite(en[0])
-            sorted_entropy.append([sum_entropy, loc, en[0], en[1], en[2]])
+            sorted_entropy.append([sum_entropy, en[1], en[2], en[0], loc])
         sorted_entropy = sorted(sorted_entropy, key=lambda entropy: entropy[0], reverse=True)
         return sorted_entropy

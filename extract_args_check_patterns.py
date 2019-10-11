@@ -664,8 +664,15 @@ class ExtractArgsCheckPatterns:
         # -test
         print "len(callee_ids) = %d " % (len(callee_ids))
         # -test
+        arg_ids = self.query_args(callee_ids[0])
+        arg_num = len(arg_ids)
+
+
         for callee_id in callee_ids:
-            check_patterns_callee = []
+            implicit_check_patterns = [[] for i in range(arg_num)]
+            explicit_check_patterns = [[] for i in range(arg_num)]
+            check_patterns_callee = [implicit_check_patterns, explicit_check_patterns]
+
             i = i+1
             # get callsite_id = cfgnodid of callee_id
             callsite_id = self.query_callsite_id(callee_id)
@@ -676,17 +683,13 @@ class ExtractArgsCheckPatterns:
             # get controls control the callsite_id
             all_controls = self.query_controls(callsite_id)
             all_paths = self.query_backward_paths(callee_id)
-
             # -test
             print all_paths
             print "\n"
             # test-
-
-
             paths_count = len(all_paths)
             # print "len(all_paths) = %d" % len(all_paths)
             if paths_count == 0:
-                check_patterns_callee.append([[], []])
                 check_patterns.append([callee_id, check_patterns_callee])
                 continue
             else:
@@ -761,6 +764,45 @@ class ExtractArgsCheckPatterns:
             check_patterns = self.run_thread(callee_ids)
         else:
             check_patterns = self.run_no_thread(callee_ids)
+
+        #测试用 start
+        check_patterns = [[5192,[[[[], [], ['arg_2 DEFBY arg_0']], [[u'f(arg_0) != f(NULL)'], [], [u'f(arg_2) != f(NULL)']]]]],
+                          [13922,[[[[], [], ['arg_2 DEFBY arg_1']], [[], [], []]]]],
+                          [17882,[[[[], [], ['arg_2 DEFBY CNT']], [[], ['f(arg_1) != f(NULL)'], []]]]],
+                          [18608,[[[[], [], ['arg_2 DEFBY arg_0']], [[], [], []]]]],
+                          [19962,[[[[], [], []], [[], ['f(arg_1) != f(NULL)'], ['f(arg_2) <= f(Var)']]]]],
+                          [20175,[[[[], ['arg_1 DEFBY CNT'], ['arg_2 DEFBY CNT']], [[], [], []]]]],
+                          [20343,[[[[], [], []], [[], [u'f(arg_1, arg_2) <= f(Var)'], [u'f(arg_2, arg_1) <= f(Var)']]]]],
+                          [23648,[[[[], [], []], [[], [u'f(arg_1) >= f(arg_2)'], [u'f(arg_2) <= f(arg_1)']]]]],
+                          [25390,[[[[], [], ['arg_2 DEFBY arg_1']], [[], [], []]],[[[], [], ['arg_2 DEFBY arg_1']], [[u'f(arg_0) != f(0)',], [u'f(arg_1) > f(Var)'], []]]]],
+                          [32689,[[[[], [], ['arg_2 DEFBY CNT']], [[], ['f(arg_1) != f(NULL)'], []]]]],
+                          [43086,[[[[], [], ['arg_2 DEFBY arg_1']], [[], [u'f(arg_1) < f(Var)'], []]]]],
+                          [44971,[[[[], [], ['arg_2 DEFBY arg_0']], [[], ['f(arg_1) != f(NULL)'], []]]]],
+                          [47472,[[[[], [], ['arg_2 DEFBY arg_0']], [[], ['f(arg_1) != f(NULL)'], []]]]],
+                          [55738,[[[[], [], ['arg_2 DEFBY arg_0']], [[], [], []]]]],
+                          [56114,[[[[], [], ['arg_2 DEFBY arg_0']], [[], [], []]]]],
+                          [56271,[[[[], [], []], [[], ['f(arg_1) == f(0)'], []]]]],
+                          [56493,[[[[], [], ['arg_2 DEFBY arg_0']], [[], ['f(arg_1) == f(0)'], []]]]],
+                          [56933,[[[[], [], ['arg_2 DEFBY arg_0']], [[], ['f(arg_1) == f(0)'], []]]]],
+                          [57207,[[[[], [], ['arg_2 DEFBY arg_0']], [[], ['f(arg_1) == f(0)'], []]]]],
+                          [57940,[[[[], [], []], [[], [], []]]]],
+                          [58774,[[[[], [], []], [[], [], []]]]],
+                          [58999,[[[[], [], []], [[], [], ['f(arg_2) <= f(Var)']]]]],
+                          [59642,[[[[], [], []], [[], [], ['f(arg_2) <= f(Var)']]]]],
+                          [60190,[[[[], [], []], [[], [], ['f(arg_2) <= f(Var)']]]]],
+                          [60249,[[[[], [], ['arg_2 DEFBY arg_0']], [[], [u'f(arg_1) == f(0)'], []]]]],
+                          [60334,[[[[], [], ['arg_2 DEFBY arg_0']], [[], [], []]]]],
+                          [61302,[[[[], [], []], [[], [u'f(arg_1) == f(notNULL)'], [u'f(arg_2) == f(notNULL)']]]]],
+                          [65274,[[[['arg_0 DEFBY arg_2'], [], []], [[u'f(arg_0) != f(NULL)'], [], []]]]],
+                          [65363,[[[[], [], ['arg_2 DEFBY arg_1']], [[], ['f(arg_1, arg_2) == f(NULL)'], [u'f(arg_2) >= f(arg_2)', 'f(arg_2, arg_1) == f(NULL)']]],[[['arg_0 DEFBY arg_1', 'arg_0 DEFBY arg_2'], [], ['arg_2 DEFBY arg_1']], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', 'f(arg_0, arg_1, arg_2) == f(NULL)', u'f(arg_0) >= f(arg_0)', u"f(arg_0) == f(':')"], ['f(arg_1, arg_0, arg_2) == f(NULL)'], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2, arg_0, arg_1) == f(NULL)']]],[[['arg_0 DEFBY arg_1', 'arg_0 DEFBY arg_2'], [], ['arg_2 DEFBY arg_1']], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', 'f(arg_0, arg_1, arg_2) == f(NULL)', u'f(arg_0) >= f(arg_0)', u"f(arg_0) == f('}')", u"f(arg_0) == f(':')"], ['f(arg_1, arg_0, arg_2) == f(NULL)'], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2, arg_0, arg_1) == f(NULL)']]],[[['arg_0 DEFBY arg_2'], [], ['arg_2 DEFBY arg_1']], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', u'f(arg_0) >= f(arg_0)', u"f(arg_0) == f(':')"], ['f(arg_1, arg_2) == f(NULL)'], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2, arg_1) == f(NULL)']]],[[['arg_0 DEFBY arg_2'], [], ['arg_2 DEFBY arg_1']], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', u'f(arg_0) >= f(arg_0)', u"f(arg_0) == f('}')", u"f(arg_0) == f(':')"], ['f(arg_1, arg_2) == f(NULL)'], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2, arg_1) == f(NULL)']]],[[['arg_0 DEFBY arg_2'], [], ['arg_2 DEFBY arg_1']], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', u'f(arg_0) >= f(arg_0)', u"f(arg_0) == f('}')"], ['f(arg_1, arg_2) == f(NULL)'], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2, arg_1) == f(NULL)']]]]],
+                          [65408,[[[['arg_0 DEFBY arg_1', 'arg_0 DEFBY arg_2'], [], ['arg_2 DEFBY arg_1']], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', 'f(arg_0) == f(notNULL)', u'f(arg_0) >= f(arg_0)', u'f(arg_0) != f(NULL)'], [], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2) == f(notNULL)', u"f(arg_2) == f(':')"]]],[[['arg_0 DEFBY arg_1', 'arg_0 DEFBY arg_2'], [], ['arg_2 DEFBY arg_1']], [[u'f(arg_0, arg_2) >= f(arg_0, arg_2)', 'f(arg_0) == f(notNULL)', u'f(arg_0) >= f(arg_0)', u'f(arg_0) != f(NULL)'], [u"f(arg_1, arg_2) == f(':')"], [u'f(arg_2, arg_0) >= f(arg_0, arg_2)', 'f(arg_2) == f(notNULL)', u"f(arg_2) == f('}')", u"f(arg_2, arg_1) == f(':')"]]], [[[], [], []], [[], [], []]]]],
+                          [65569,[[[[], [], ['arg_2 DEFBY arg_1']], [[], [u'f(arg_1, arg_2) != f(NULL)'], [u'f(arg_2) >= f(arg_2)', u'f(arg_2, arg_1) != f(NULL)']]],[[[], [], []], [[], [u'f(arg_1) != f(NULL)'], [u'f(arg_2) >= f(arg_2)']]]]],
+                          [69334,[[[[], [], ['arg_2 DEFBY arg_0']], [[u'f(arg_0) <= f(arg_1, arg_2)'], [u'f(arg_1, arg_2) >= f(arg_0)'], [u'f(arg_2, arg_1) >= f(arg_0)']]]]],
+                          [73481,[[[[], [], []], [['f(arg_0) != f(NULL)'], [], [u'f(arg_2) != f(0)', 'f(arg_2) != f(NULL)']]]]],
+                          [75333,[[[[], [], ['arg_2 DEFBY arg_1']], [[], [], ['f(arg_2) != f(Var)']]]]]]
+        #测试用 end
+
+
         print "check_patterns =： "
         #print check_patterns
         # display chek_patterns
@@ -769,6 +811,7 @@ class ExtractArgsCheckPatterns:
             print "%s: %s" % (pattern[0], loc)
             for path_pattern in pattern[1]:
                 print "\t %s" % path_pattern
+
         ObjDataAndBinFile.objdata2file(check_patterns, filepath)
         return check_patterns
 
