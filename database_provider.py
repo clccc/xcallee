@@ -1,4 +1,4 @@
-# ---------------------------
+# ---------------------------calculate_pattern_entropy_onlyrm_unneedArg
 # code by cl 2016-03-26
 # uses pickle to save struct data to a file or load struct data from a file
 # ---------------------------

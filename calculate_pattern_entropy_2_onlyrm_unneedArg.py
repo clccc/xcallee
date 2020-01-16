@@ -115,18 +115,7 @@ class CalculateEntropy:
                     # i_arg在无需检查列表中
                     if i_arg in args_implicit_uncheck: # 在无需检查
                         entropy_implicit_tmp = 0
-                    elif i_arg in args_implicit_needcheck: # 在必查
-                        # 隐式约束的entropy计算
-                        implicit_patterns = path_implicit_patterns[i_arg]
-                        probability_tmp = []
-                        if implicit_patterns:
-                            for pattern in implicit_patterns:
-                                probability_tmp.append(bag_implicit[i_arg].count(pattern)/size_bag_implicit[i_arg])
-                            entropy_implicit_tmp = self.calculate_entropy(probability_tmp, size_bag_implicit[i_arg])
-                        else:
-                            # 必须检查，而检查为空，entrpy设置为1
-                            entropy_implicit_tmp = 1
-                    elif (i_arg not in args_implicit_uncheck) and (i_arg not in args_implicit_needcheck): # 普通未知
+                    else: # 在必查
                         # 隐式约束的entropy计算
                         implicit_patterns = path_implicit_patterns[i_arg]
                         probability_tmp = []
@@ -143,18 +132,8 @@ class CalculateEntropy:
                     # undo: 判断无检查情况是否大于80%,是则认为该参数无需检查，中断entropy计算
                     if i_arg in args_explicit_uncheck:# 无需检查
                         entropy_explicit_tmp = 0
-                    elif i_arg in args_explicit_needcheck:# 必须检查
+                    else:# 必须检查
                         # 显式约束的entropy计算
-                        probability_tmp = []
-                        explicit_patterns = path_explicit_patterns[i_arg]
-                        if explicit_patterns:
-                            for pattern in explicit_patterns:
-                                probability_tmp.append(bag_explicit[i_arg].count(pattern)/size_bag_explicit[i_arg])
-                            entropy_explicit_tmp = self.calculate_entropy(probability_tmp, size_bag_explicit[i_arg])
-                        else: # 必须检查，缺没有检查，entropy为1
-                            entropy_explicit_tmp = 1
-                    elif (i_arg not in args_explicit_uncheck) and (i_arg not in args_explicit_needcheck): # 普通未知
-                    # 显式约束的entropy计算
                         probability_tmp = []
                         explicit_patterns = path_explicit_patterns[i_arg]
                         if explicit_patterns:

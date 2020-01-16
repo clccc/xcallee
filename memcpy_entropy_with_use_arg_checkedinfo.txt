@@ -1,0 +1,52 @@
+Begin time: 2019-12-30 16:31:12.493689
+阈值：th_uncheck > 0.8  th_needcheck < 0.4
+
+# Total entropy | implict-check | explict check | callsite id | location
+
+[1.9, [0, 0, 1], [0.28, 0.32, 0.3], 57940, u'/mnt/win-e/sourcecode/file-FILE5_35/src/readelf.c: 755:3:21286:21318']
+[1.9, [0, 0, 1], [0.28, 0.32, 0.3], 65408, u'/mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 493:2:14086:14105']
+[1.8, [0, 0, 1], [0.28, 0.22, 0.3], 56271, u'/mnt/win-e/sourcecode/file-FILE5_35/src/readelf.c: 558:2:15949:15982']
+[1.78, [0, 0, 1], [0.16, 0.32, 0.3], 65274, u'/mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 448:1:13244:13272']
+[1.76, [0, 0, 1], [0.28, 0.32, 0.16], 58999, u'/mnt/win-e/sourcecode/file-FILE5_35/src/readelf.c: 1090:1:28802:28845']
+[1.76, [0, 0, 1], [0.28, 0.32, 0.16], 59642, u'/mnt/win-e/sourcecode/file-FILE5_35/src/readelf.c: 1129:1:29544:29587']
+[1.76, [0, 0, 1], [0.28, 0.32, 0.16], 60190, u'/mnt/win-e/sourcecode/file-FILE5_35/src/readelf.c: 1472:4:37537:37573']
+[1.68, [0, 0, 1], [0.28, 0.24, 0.16], 19962, u'/mnt/win-e/sourcecode/file-FILE5_35/src/cdf.c: 348:2:9419:9460']
+[1.68, [0, 0, 0.32], [0.64, 0.32, 0.4], 65408, u'/mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 493:2:14086:14105']
+[1.65, [0, 0, 1], [0.28, 0.24, 0.13], 65569, u'/mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 464:2:13593:13613']
+[1.64, [0, 0, 1], [0.16, 0.32, 0.16], 73481, u'/mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 2039:7:46830:46862']
+[1.54, [0, 0, 0.32], [0.65, 0.2, 0.37], 65363, u'/mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 503:1:14201:14221']
+[1.5, [0, 0, 0.32], [0.74, 0.13, 0.31], 65363, u'/mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 503:1:14201:14221']
+[1.5, [0, 0, 0.32], [0.64, 0.08, 0.46], 65408, u'/mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 493:2:14086:14105']
+[1.49, [0, 0, 1], [0.28, 0.08, 0.13], 61302, u'/mnt/win-e/sourcecode/file-FILE5_35/src/readelf.c: 1671:4:41867:41896']
+[1.42, [0, 0, 1], [0.28, 0.08, 0.06], 20343, u'/mnt/win-e/sourcecode/file-FILE5_35/src/cdf.c: 420:1:11084:11164']
+[1.42, [0, 0, 1], [0.28, 0.08, 0.06], 23648, u'/mnt/win-e/sourcecode/file-FILE5_35/src/cdf.c: 930:1:23479:23513']
+[1.42, [0, 0, 0.32], [0.53, 0.2, 0.37], 65363, u'/mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 503:1:14201:14221']
+[1.4, [0, 0, 0.32], [0.51, 0.2, 0.37], 65363, u'/mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 503:1:14201:14221']
+[1.38, [0, 0, 0.32], [0.62, 0.13, 0.31], 65363, u'/mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 503:1:14201:14221']
+[1.22, [0, 0, 0.32], [0.28, 0.32, 0.3], 13922, u'/mnt/win-e/sourcecode/file-FILE5_35/src/apprentice.c: 3203:1:69484:69518']
+[1.22, [0, 0, 0.32], [0.28, 0.32, 0.3], 25390, u'/mnt/win-e/sourcecode/file-FILE5_35/src/cdf.c: 1156:2:29293:29327']
+[1.21, [0, 0, 0.31], [0.28, 0.32, 0.3], 18608, u'/mnt/win-e/sourcecode/file-FILE5_35/src/cdf.c: 174:1:4652:4710']
+[1.21, [0, 0, 0.31], [0.28, 0.32, 0.3], 55738, u'/mnt/win-e/sourcecode/file-FILE5_35/src/readelf.c: 414:1:12343:12373']
+[1.21, [0, 0, 0.31], [0.28, 0.32, 0.3], 56114, u'/mnt/win-e/sourcecode/file-FILE5_35/src/readelf.c: 460:1:13461:13491']
+[1.21, [0, 0, 0.31], [0.28, 0.32, 0.3], 60334, u'/mnt/win-e/sourcecode/file-FILE5_35/src/readelf.c: 1446:5:36983:37011']
+[1.13, [0, 0, 0.31], [0.28, 0.24, 0.3], 44971, u'/mnt/win-e/sourcecode/file-FILE5_35/src/gmtime_r.c: 17:1:391:419']
+[1.13, [0, 0, 0.31], [0.28, 0.24, 0.3], 47472, u'/mnt/win-e/sourcecode/file-FILE5_35/src/localtime_r.c: 17:1:403:431']
+[1.11, [0, 0, 0.31], [0.28, 0.22, 0.3], 56493, u'/mnt/win-e/sourcecode/file-FILE5_35/src/readelf.c: 658:2:18653:18693']
+[1.11, [0, 0, 0.31], [0.28, 0.22, 0.3], 56933, u'/mnt/win-e/sourcecode/file-FILE5_35/src/readelf.c: 591:2:16882:16921']
+[1.11, [0, 0, 0.31], [0.28, 0.22, 0.3], 57207, u'/mnt/win-e/sourcecode/file-FILE5_35/src/readelf.c: 688:2:19373:19413']
+[1.11, [0, 0, 0.31], [0.28, 0.22, 0.3], 60249, u'/mnt/win-e/sourcecode/file-FILE5_35/src/readelf.c: 1458:5:37260:37288']
+[1.1, [0, 0, 0.2], [0.28, 0.32, 0.3], 20175, u'/mnt/win-e/sourcecode/file-FILE5_35/src/cdf.c: 369:1:9734:9775']
+[1.1, [0, 0, 0.2], [0.28, 0.32, 0.3], 58774, u'/mnt/win-e/sourcecode/file-FILE5_35/src/readelf.c: 1011:2:27312:27363']
+[1.08, [0, 0, 0.32], [0.28, 0.2, 0.28], 65363, u'/mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 503:1:14201:14221']
+[1.02, [0, 0, 0.2], [0.28, 0.24, 0.3], 17882, u'/mnt/win-e/sourcecode/file-FILE5_35/src/asctime_r.c: 17:1:322:340']
+[1.02, [0, 0, 0.2], [0.28, 0.24, 0.3], 32689, u'/mnt/win-e/sourcecode/file-FILE5_35/src/ctime_r.c: 17:1:313:331']
+[0.98, [0, 0, 0.32], [0.28, 0.08, 0.3], 43086, u'/mnt/win-e/sourcecode/file-FILE5_35/src/funcs.c: 451:4:10213:10248']
+[0.98, [0, 0, 0.32], [0.28, 0.32, 0.06], 75333, u'/mnt/win-e/sourcecode/file-FILE5_35/src/vasprintf.c: 188:2:7586:7628']
+[0.89, [0, 0, 0.31], [0.16, 0.32, 0.1], 5192, u'/mnt/win-e/sourcecode/file-FILE5_35/src/apprentice.c: 1314:2:30377:30457']
+[0.87, [0, 0, 0.32], [0.28, 0.08, 0.19], 65569, u'/mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 464:2:13593:13613']
+[0.75, [0, 0, 0.32], [0.05, 0.08, 0.3], 25390, u'/mnt/win-e/sourcecode/file-FILE5_35/src/cdf.c: 1156:2:29293:29327']
+[0.5, [0, 0, 0.31], [0.05, 0.08, 0.06], 69334, u'/mnt/win-e/sourcecode/file-FILE5_35/src/softmagic.c: 1362:1:32445:32480']
+
+End: 2019-12-30 16:31:13.957745
+
+Time Used: 0:00:01.464056
